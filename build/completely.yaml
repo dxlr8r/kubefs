@@ -1,0 +1,38 @@
+kubefs:
+- get
+- list
+- list-all
+- auth
+- lock
+
+kubefs get: [""]
+kubefs list: [""]
+kubefs list-all: [""]
+
+kubefs auth:
+- $(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeauth' 2>/dev/null)
+
+kubefs lock:
+- global
+- session
+
+kubefs lock global: &lock
+- set
+- toggle
+- del
+- get
+- list
+
+kubefs lock global set: &kubeconfig
+- $(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null)
+kubefs lock global toggle: *kubeconfig
+kubefs lock global del: [""]
+kubefs lock global get: [""]
+kubefs lock global list: [""]
+
+kubefs lock session: *lock
+kubefs lock session set: *kubeconfig
+kubefs lock session toggle: *kubeconfig
+kubefs lock session del: [""]
+kubefs lock session get: [""]
+kubefs lock session list: [""]
