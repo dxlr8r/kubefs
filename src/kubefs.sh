@@ -297,8 +297,6 @@ _kfs_which() {
 _kfs_alias() {
   alias $1="$2"
 
-  # bash completion not setup
-  _kfs_which _get_comp_words_by_ref || return 0
   # kubefs completion not sourced
   _kfs_which _kubefs_completions || return 0
   

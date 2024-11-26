@@ -1,6 +1,8 @@
 #!/bin/sh
 # https://github.com/dxlr8r/kubefs
 _kfs_addons_kubectl_alias_complete() {
+test "${KUBEFS_COMPLETION:-true}" = 'true' || return 0
+test -t 1 || return 0
 command -v _get_comp_words_by_ref >/dev/null 2>&1 || return 0
 command -v __start_kubectl >/dev/null 2>&1 || return 0
 eval "$(printf "

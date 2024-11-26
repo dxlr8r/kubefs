@@ -1,6 +1,10 @@
 #!/bin/sh
 
 _kfs_addons_kubectl_alias_complete() {
+  # skip if requested
+  test "${KUBEFS_COMPLETION:-true}" = 'true' || return 0
+  # not executed as a subshell, prefixed to a pipe, etc.
+  test -t 1 || return 0
   # bash completion not setup
   command -v _get_comp_words_by_ref >/dev/null 2>&1 || return 0
   # kubectl completion not sourced
