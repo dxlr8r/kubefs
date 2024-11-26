@@ -82,7 +82,7 @@ cat << EOF | strip | add_credits > "$BIN/kubefs"
 if \\
   test "\${KUBEFS_COMPLETION:-true}" = 'true' \\
   && test -t 1 \\
-  && command -v _get_comp_words_by_ref >/dev/null 2>&1 \\; then
+  && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
   eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash") | base64 --decode)"
 fi
 $(awk 'NR > 1' "$SRC/kubefs.sh")
