@@ -32,7 +32,7 @@ strip() (
   fi
   _data="$1"
   _header=$(printf '%s\n' "$_data" | head -n1)
-  
+
   # do not strip shebang
   printf '%s' "$_header" | cut -b1-2 | grep -Fxq '#!' \
   && { printf '%s\n' "$_header" ; } \
@@ -50,7 +50,7 @@ add_credits() (
   _data="$1"
   printf '%s\n' "$_data" | head -n1
   printf '%s\n' "$KUBEFS_CREDITS"
-  printf '%s\n' "$_data" | awk 'NR > 1' 
+  printf '%s\n' "$_data" | awk 'NR > 1'
 )
 
 # cd to path of script
@@ -80,7 +80,7 @@ cat "$SRC/kubeauth_init.sh" | add_credits > "$BIN/kubeauth_init"
 
 # build `install.sh`
 
-cat << EOF | add_credits > "$ROOT/install.sh" 
+cat << EOF | add_credits > "$ROOT/install.sh"
 #!/bin/sh
 BINDIR=\${BINDIR:-"\$HOME/.local/bin"}
 mkdir -p "\$BINDIR"
