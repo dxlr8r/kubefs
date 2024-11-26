@@ -355,3 +355,5 @@ command -v $tool >/dev/null 2>&1 \
 && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
 done
 fi
+
+# https://github.com/dxlr8r/kubefs

@@ -3,8 +3,7 @@
 set -eo pipefail
 
 # header attached to `kubefs`
-KUBEFS_HEADER='#!/bin/sh
-# https://github.com/dxlr8r/kubefs'
+KUBEFS_CREDITS='# https://github.com/dxlr8r/kubefs'
 
 # some helper functions
 indent() {
@@ -17,6 +16,8 @@ b64() {
     base64 -i "$1"
   fi
 }
+
+# converts a script to base64 and enables executable bit
 append_script() (
   src=$1
   dest=$(basename "$1")
@@ -24,17 +25,46 @@ append_script() (
   printf 'chmod +x "%s/%s"\n' '$BINDIR' "$dest"
 )
 
+# strips comments, empty lines, and indentation
+strip() (
+  if test "$#" -eq 0; then
+    strip "$(cat)"
+  fi
+  _data="$1"
+  _header=$(printf '%s\n' "$_data" | head -n1)
+  
+  # do not strip shebang
+  printf '%s' "$_header" | cut -b1-2 | grep -Fxq '#!' \
+  && { printf '%s\n' "$_header" ; } \
+  || { printf '%s\n' "$_header" | _stripper ; }
+
+  printf '%s\n' "$_data" | awk 'NR > 1' | _stripper
+)
+_stripper() (
+  grep -vE '^\s*(#|$)' | sed -E 's/^ +//g' || :
+)
+add_credits() (
+  if test "$#" -eq 0; then
+    add_credits "$(cat)"
+  fi
+  _data="$1"
+  printf '%s\n' "$_data" | head -n1
+  printf '%s\n' "$KUBEFS_CREDITS"
+  printf '%s\n' "$_data" | awk 'NR > 1' 
+)
+
 # cd to path of script
 cd "$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 SRC='../src'
+BIN='../bin'
 ROOT='..'
 
 # build `kubefs`
 
 COMPLETELY_OUTPUT_PATH="$SRC/kubefs-completions.bash" completely generate
 
-cat << EOF | grep -vE '^\s*(#|$)' | sed -E 's/^ +//g' \
-| printf '%s\n%s\n' "$KUBEFS_HEADER" "$(cat)" > "$ROOT/kubefs"
+cat << EOF | strip | add_credits > "$BIN/kubefs"
+#!/bin/sh
 if \\
   test "\${KUBEFS_COMPLETION:-true}" = 'true' \\
   && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
@@ -43,14 +73,19 @@ fi
 $(awk 'NR > 1' "$SRC/kubefs.sh")
 EOF
 
+# build rest
+
+cat "$SRC/kubefs_addons.sh" | strip | add_credits > "$BIN/kubefs_addons"
+cat "$SRC/kubeauth_init.sh" | add_credits > "$BIN/kubeauth_init"
+
 # build `install.sh`
 
-cat > "$ROOT/install.sh" << EOF
+cat << EOF | add_credits > "$ROOT/install.sh" 
 #!/bin/sh
 BINDIR=\${BINDIR:-"\$HOME/.local/bin"}
 mkdir -p "\$BINDIR"
 EOF
 
-append_script "$SRC/kubefs.sh" >> "$ROOT/install.sh"
-append_script "$ROOT/kubeauth_init" >> "$ROOT/install.sh"
-append_script "$ROOT/kubefs_addons" >> "$ROOT/install.sh"
+append_script "$BIN/kubefs"        >> "$ROOT/install.sh"
+append_script "$BIN/kubeauth_init" >> "$ROOT/install.sh"
+append_script "$BIN/kubefs_addons" >> "$ROOT/install.sh"
