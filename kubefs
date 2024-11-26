@@ -1,5 +1,5 @@
 #!/bin/sh
-#Simen
+# https://github.com/dxlr8r/kubefs
 if \
 test "${KUBEFS_COMPLETION:-true}" = 'true' \
 && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
