@@ -53,4 +53,4 @@ EOF
 
 append_script "$SRC/kubefs.sh" >> "$ROOT/install.sh"
 append_script "$ROOT/kubeauth_init" >> "$ROOT/install.sh"
-append_script "$ROOT/addons.sh" >> "$ROOT/install.sh"
+append_script "$ROOT/kubefs_addons" >> "$ROOT/install.sh"
