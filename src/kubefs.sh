@@ -171,6 +171,14 @@ _kfs_kubectl() (
   command kubectl "$@"
 )
 
+_kfs_cd() {
+  if test -f "$1/.kubeconfig"; then
+    command cd -- "$1"
+  else
+    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
+  fi
+}
+
 kubefs() {
   case ${1:-get} in
   ctl|kubectl)
@@ -179,6 +187,10 @@ kubefs() {
   ;;
   g|get)
     printf '%s\n' "$(_kfs_find_kubeconfig)"
+  ;;
+  cd|jump)
+    shift
+    _kfs_cd "${1:-}"
   ;;
   ls|list)
     printf 'KUBECONFIG="%s"\n' "$(kubefs get)"
@@ -295,7 +307,7 @@ _kfs_which() {
 
 ## create an alias, with bash completion
 _kfs_alias() {
-  alias $1="$2"
+  alias $1="kubefs $2"
 
   # kubefs completion not sourced
   _kfs_which _kubefs_completions || return 0
@@ -341,6 +353,7 @@ if test "${KUBEFS_OPTIONAL_ALIAS:-true}" = 'true'; then
   _kfs_alias kfg 'lock global toggle'
   _kfs_alias kfe 'lock session set'
   _kfs_alias kfl 'lock session toggle'
+  _kfs_alias kfc 'cd'
   alias kfls='kubefs list-all'
   alias kfa='kubefs auth'
 

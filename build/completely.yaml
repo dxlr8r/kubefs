@@ -1,5 +1,6 @@
 kubefs:
 - get
+- cd
 - list
 - list-all
 - auth
@@ -36,3 +37,6 @@ kubefs lock session toggle: *kubeconfig
 kubefs lock session del: [""]
 kubefs lock session get: [""]
 kubefs lock session list: [""]
+
+kubefs cd:
+- $(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' -exec dirname {} \; 2>/dev/null)
