@@ -6,9 +6,13 @@ set -eo pipefail
 KUBEFS_CREDITS='# https://github.com/dxlr8r/kubefs'
 
 # some helper functions
+
+## indent input
 indent() {
   awk -v I="${2:-  }" '{if (length($0) > 0) {printf "%s%s\n", I, $0} else {print}}' "$1"
 }
+
+## GNU/BSD independent base64 converter
 b64() (
   if test "$#" -eq 0; then
     _data='-'
@@ -22,7 +26,7 @@ b64() (
   fi
 )
 
-# converts a script to base64 and enables executable bit
+## converts a script to base64 and enables executable bit
 append_script() (
   src=$1
   dest=$(basename "$1")
@@ -30,7 +34,7 @@ append_script() (
   printf 'chmod +x "%s/%s"\n' '$BINDIR' "$dest"
 )
 
-# strips comments, empty lines, and indentation
+## strips comments, empty lines, and indentation
 strip() (
   if test "$#" -eq 0; then
     strip "$(cat)"
@@ -49,6 +53,8 @@ strip() (
 _stripper() (
   grep -vE '^\s*(#|$)' | sed -E 's/^ +//g' || :
 )
+
+## add credits to script
 add_credits() (
   if test "$#" -eq 0; then
     add_credits "$(cat)"
@@ -68,7 +74,8 @@ ROOT='..'
 
 # build `kubefs`
 
-COMPLETELY_OUTPUT_PATH="$SRC/kubefs-completions.bash" completely generate
+completely generate
+cat completely.bash | strip | b64 > "$SRC/kubefs-completions.bash"
 
 cat << EOF | strip | add_credits > "$BIN/kubefs"
 #!/bin/sh
@@ -76,7 +83,7 @@ if \\
   test "\${KUBEFS_COMPLETION:-true}" = 'true' \\
   && command -v _get_comp_words_by_ref >/dev/null 2>&1 \\
   && test -t 1; then
-  eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash" | strip | b64) | base64 --decode)"
+  eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash") | base64 --decode)"
 fi
 $(awk 'NR > 1' "$SRC/kubefs.sh")
 EOF
