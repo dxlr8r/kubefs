@@ -104,5 +104,3 @@ printf "%s\n" "$_ns" \
 | sort -t "$_sep" -k2r
 fi
 )
-
-# https://github.com/dxlr8r/kubefs

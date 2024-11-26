@@ -9,13 +9,18 @@ KUBEFS_CREDITS='# https://github.com/dxlr8r/kubefs'
 indent() {
   awk -v I="${2:-  }" '{if (length($0) > 0) {printf "%s%s\n", I, $0} else {print}}' "$1"
 }
-b64() { 
-  if base64 --version 2>&1 | head -n1 | grep -q 'GNU'; then
-    base64 -w0 "$1"
+b64() (
+  if test "$#" -eq 0; then
+    _data='-'
   else
-    base64 -i "$1"
+    _data="$1"
   fi
-}
+  if base64 --version 2>&1 | head -n1 | grep -q 'GNU'; then
+    base64 -w0 "$_data"
+  else
+    base64 -i "$_data"
+  fi
+)
 
 # converts a script to base64 and enables executable bit
 append_script() (
@@ -29,16 +34,17 @@ append_script() (
 strip() (
   if test "$#" -eq 0; then
     strip "$(cat)"
+  else
+    _data="$1"
+    _header=$(printf '%s\n' "$_data" | head -n1)
+
+    # do not strip shebang
+    printf '%s' "$_header" | cut -b1-2 | grep -Fxq '#!' \
+    && { printf '%s\n' "$_header" ; } \
+    || { printf '%s\n' "$_header" | _stripper ; }
+
+    printf '%s\n' "$_data" | awk 'NR > 1' | _stripper
   fi
-  _data="$1"
-  _header=$(printf '%s\n' "$_data" | head -n1)
-
-  # do not strip shebang
-  printf '%s' "$_header" | cut -b1-2 | grep -Fxq '#!' \
-  && { printf '%s\n' "$_header" ; } \
-  || { printf '%s\n' "$_header" | _stripper ; }
-
-  printf '%s\n' "$_data" | awk 'NR > 1' | _stripper
 )
 _stripper() (
   grep -vE '^\s*(#|$)' | sed -E 's/^ +//g' || :
@@ -46,11 +52,12 @@ _stripper() (
 add_credits() (
   if test "$#" -eq 0; then
     add_credits "$(cat)"
+  else
+    _data="$1"
+    printf '%s\n' "$_data" | head -n1
+    printf '%s\n' "$KUBEFS_CREDITS"
+    printf '%s\n' "$_data" | awk 'NR > 1'
   fi
-  _data="$1"
-  printf '%s\n' "$_data" | head -n1
-  printf '%s\n' "$KUBEFS_CREDITS"
-  printf '%s\n' "$_data" | awk 'NR > 1'
 )
 
 # cd to path of script
@@ -67,8 +74,9 @@ cat << EOF | strip | add_credits > "$BIN/kubefs"
 #!/bin/sh
 if \\
   test "\${KUBEFS_COMPLETION:-true}" = 'true' \\
-  && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
-$(indent "$SRC/kubefs-completions.bash")
+  && command -v _get_comp_words_by_ref >/dev/null 2>&1 \\
+  && test -t 1; then
+  eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash" | strip | b64) | base64 --decode)"
 fi
 $(awk 'NR > 1' "$SRC/kubefs.sh")
 EOF

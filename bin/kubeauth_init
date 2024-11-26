@@ -20,5 +20,3 @@ export KUBECONFIG="${SPATH}/.kubeconfig"
 kubectl auth can-i --list >/dev/null 2>&1 \
 && KUBE_AUTHENTICATED=true \
 || unset KUBE_AUTHENTICATED
-
-# https://github.com/dxlr8r/kubefs
