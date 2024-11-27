@@ -137,3 +137,14 @@ kn() (
     | sort -t "$_sep" -k2r
   fi
 )
+
+kubeauth_init() {
+  if test -e "${1:-$(pwd)}/.kubeauth"; then
+    printf 'ERROR: `%s` already exists.\n' "${1:-}/.kubeauth" > /dev/stderr
+    return 1
+  else
+    # needs to be escaped, otherwise `build.sh` will strip comments and leading whitespace
+    printf '%b' '#!/bin/sh\nset -e\n. "$HOME/.local/share/kubefs/kubeauth_init.sh"\n\nif test -z "${KUBE_AUTHENTICATED:-}"; then\n  # myauth_cmd\n  # kubectl config use-context myctx\nfi\n' \
+    > "${1:-$(pwd)}/.kubeauth"
+  fi
+}

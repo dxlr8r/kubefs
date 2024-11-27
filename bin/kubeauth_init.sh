@@ -1,6 +1,6 @@
 #!/bin/sh
 # https://github.com/dxlr8r/kubefs
-# having `.kubelogin` and `.kubeconfig` in the same directory is a good practice. But not required by kubefs.
+# having `.kubeauth` and `.kubeconfig` in the same directory is a good practice. But not required by kubefs.
 
 EMPTY_KUBECONFIG='apiVersion: v1
 kind: Config
