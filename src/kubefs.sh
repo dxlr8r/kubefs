@@ -1,5 +1,7 @@
 #!/bin/sh
-# kubefs.sh
+
+# KUBEFS
+# =========
 
 _kfs_printf_stderr() {
   if test "$#" -eq 0; then
@@ -10,7 +12,7 @@ _kfs_printf_stderr() {
 }
 
 _kfm_iprintf() {
-  if test -t 1 || test -n "${KUBEFS_DEBUG:-}"; then
+  if case "${-:-}" in *i*) true;; *) false;; esac || test -n "${KUBEFS_DEBUG:-}"; then
     if test "$#" -eq 0; then
       cat | _kfs_printf_stderr
     else
@@ -179,7 +181,7 @@ _kfs_cd() {
   fi
 }
 
-kubefs() {
+_kfs_cmd() {
   case ${1:-get} in
   ctl|kubectl)
     shift
@@ -190,15 +192,19 @@ kubefs() {
   ;;
   cd|jump)
     shift
-    _kfs_cd "${1:-}"
+    if test -z "${1:-}"; then
+      _kfs_cmd get
+    else
+      _kfs_cd "$1"
+    fi
   ;;
   ls|list)
-    printf 'KUBECONFIG="%s"\n' "$(kubefs get)"
+    printf 'KUBECONFIG="%s"\n' "$(_kfs_cmd get)"
   ;;
   la|lsa|list-all)
-    kubefs list
-    kubefs lock session list
-    kubefs lock global list
+    _kfs_cmd list
+    _kfs_cmd lock session list
+    _kfs_cmd lock global list
   ;;
   auth|authenticate)
     _kfs_kubeauth "${2:-}"
@@ -261,21 +267,8 @@ kubefs() {
   esac
 }
 
-# ENTRYPOINT
-## executed with arguments
-## also works when sourced, but not supported
-if test "${#:-0}" -gt 0; then
-  kubefs "$@"
-## executed as a subshell, prefixed to a pipe, etc.
-elif ! test -t 1; then
-  kubefs get
-## sourced (without arguments)
-## also works when executed, results in nothing though
-else
-  unset KUBECONFIG LOCK_KUBECONFIG
-fi
-
-# ALIASES
+# KUBEFS INTERACTIVE
+# ==================
 
 _kfs_which() {
   while test "$#" -gt 0; do
@@ -284,30 +277,9 @@ _kfs_which() {
   done
 }
 
-## install _complete_alias
-# _kfs_install_complete_alias() {
-#   # already sourced
-#   _kfs_which _complete_alias && return 0
-#   # already installed
-#   test -f "$HOME/.local/share/bash-completion/helpers/complete_alias" && return 0
-
-#   if _kfs_which 'wget'; then
-#     wget -O "$HOME/.local/share/bash-completion/helpers/complete_alias" \
-#       https://raw.githubusercontent.com/cykerway/complete-alias/refs/heads/master/complete_alias \
-#     || return 1
-#   elif  _kfs_which 'curl'; then
-#     curl -fLo "$HOME/.local/share/bash-completion/helpers/complete_alias" \
-#       https://raw.githubusercontent.com/cykerway/complete-alias/refs/heads/master/complete_alias \
-#     || return 1
-#   else
-#     _kfs_printf_stderr '# ERROR: Could not install `complete_alias`, neither `wget` or `curl` found\n'
-#     return 1
-#   fi
-# }
-
 ## create an alias, with bash completion
 _kfs_alias() {
-  alias $1="kubefs $2"
+  alias $1="_kfs_cmd $2"
 
   # kubefs completion not sourced
   _kfs_which _kubefs_completions || return 0
@@ -322,44 +294,67 @@ _kfs_alias() {
   }
   complete -o default -F _kubefs_completions_$1 $1
   ")"
-  
-  # complete_alias not sourced
-  # _kfs_which _complete_alias || return 0
-
-  # # if _complete_alias is not sourced
-  # if ! _kfs_which _complete_alias; then
-  #   # if installed then source it
-  #   if test -f "$HOME/.local/share/bash-completion/helpers/complete_alias"; then
-  #     . "$HOME/.local/share/bash-completion/helpers/complete_alias" \
-  #     || return 1
-  #   fi
-  # fi
-
-  # _kfs_which _complete_alias && complete -F _complete_alias "$1" || :
-  # complete -F _complete_alias "$1"
 }
 
-## required
-alias kubectl='_kfs_kubectl'
+_kfs_init_sourced() {
+  # required
+  alias kubefs='_kfs_cmd'
+}
 
-## recommended
-if test "${KUBEFS_RECOMMENDED_ALIAS:-true}" = 'true'; then
-  alias kf='kubefs'
-  _kfs_which _kubefs_completions && complete -F _kubefs_completions kf || :
-fi
+_kfs_init_interactive() {
+  # do not inherit from muxer etc.
+  unset KUBECONFIG LOCK_KUBECONFIG
 
-## optional
-if test "${KUBEFS_OPTIONAL_ALIAS:-true}" = 'true'; then
-  _kfs_alias kfg 'lock global toggle'
-  _kfs_alias kfe 'lock session set'
-  _kfs_alias kfl 'lock session toggle'
-  _kfs_alias kfc 'cd'
-  alias kfls='kubefs list-all'
-  alias kfa='kubefs auth'
+  # recommended
+  if test "${KUBEFS_RECOMMENDED_ALIAS:-true}" = 'true'; then
+    alias kubectl='_kfs_kubectl'
+    alias kf='_kfs_cmd'
+    _kfs_which _kubefs_completions && complete -F _kubefs_completions kf || :
+  fi
 
-  # set KUBECONFIG for tool
-  for tool in $(printf '%s\n' ${KUBEFS_TOOL:-helm} | tr ':' ' '); do
-    command -v $tool >/dev/null 2>&1 \
-    && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
-  done
+  # optional
+  if test "${KUBEFS_OPTIONAL_ALIAS:-true}" = 'true'; then
+    _kfs_alias kfg 'lock global toggle'
+    _kfs_alias kfe 'lock session set'
+    _kfs_alias kfl 'lock session toggle'
+    _kfs_alias kfc 'cd'
+    alias kfls='_kfs_cmd list-all'
+    alias kfa='_kfs_cmd auth'
+
+    # set KUBECONFIG for tool
+    for tool in $(printf '%s\n' ${KUBEFS_TOOL:-helm} | tr ':' ' '); do
+      command -v $tool >/dev/null 2>&1 \
+      && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
+    done
+  fi
+}
+
+# KUBEFS ENTRYPOINT
+# =================
+
+# executed
+if test "$(basename -- "$0" '.sh')" = 'kubefs'; then
+  _kfs_cmd "$@"
+  printf -- '---
+  WARNING: executing `kubefs` as an executable is not recommended.\n
+  Only the following commands fill work in this mode:\n
+  - ctl
+  - get
+  - ls
+  - lsa, except session
+  - auth
+  - lock global\n
+  The recommended way is to source it, that be in your shell or script.
+  ---\n' \
+  | sed -E 's#^\s{2}##' | _kfs_printf_stderr
+else
+  _kfs_init_sourced
+  ## interactive, not subshelled, without arguments
+  if
+    case "${-:-}" in *i*) true;; *) false;; esac &&
+    test -t 1 &&
+    test "${#:-0}" -eq 0
+  then
+    _kfs_init_interactive
+  fi
 fi

@@ -26,12 +26,12 @@ b64() (
   fi
 )
 
-## converts a script to base64 and enables executable bit
+## converts a script to base64
 append_script() (
   src=$1
   dest=$(basename "$1")
-  printf "printf '%%s\\\n' '"%s"' | base64 --decode > \"%s/%s\"\n" $(b64 "$src") '$BINDIR' "$dest"
-  printf 'chmod +x "%s/%s"\n' '$BINDIR' "$dest"
+  printf "printf '%%s\\\n' '"%s"' | base64 --decode > \"%s/%s\"\n" $(b64 "$src") '$KUBEFS_DIR' "$dest"
+  # printf 'chmod +x "%s/%s"\n' '$KUBEFS_DIR' "$dest"
 )
 
 ## strips comments, empty lines, and indentation
@@ -77,10 +77,11 @@ ROOT='..'
 completely generate
 cat completely.bash | strip | b64 > "$SRC/kubefs-completions.bash"
 
-cat << EOF | strip | add_credits > "$BIN/kubefs"
+cat << EOF | strip | add_credits > "$BIN/kubefs.sh"
 #!/bin/sh
 if \\
   test "\${KUBEFS_COMPLETION:-true}" = 'true' \\
+  && case "\${-:-}" in *i*) true;; *) false;; esac \\
   && test -t 1 \\
   && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
   eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash") | base64 --decode)"
@@ -90,17 +91,17 @@ EOF
 
 # build rest
 
-cat "$SRC/kubefs_addons.sh" | strip | add_credits > "$BIN/kubefs_addons"
-cat "$SRC/kubeauth_init.sh" | add_credits > "$BIN/kubeauth_init"
+cat "$SRC/kubefs_addons.sh" | strip | add_credits > "$BIN/kubefs_addons.sh"
+cat "$SRC/kubeauth_init.sh" | add_credits > "$BIN/kubeauth_init.sh"
 
 # build `install.sh`
 
 cat << EOF | add_credits > "$ROOT/install.sh"
 #!/bin/sh
-BINDIR=\${BINDIR:-"\$HOME/.local/bin"}
-mkdir -p "\$BINDIR"
+KUBEFS_DIR=\${KUBEFS_DIR:-"\$HOME/.local/share/kubefs"}
+mkdir -p "\$KUBEFS_DIR"
 EOF
 
-append_script "$BIN/kubefs"        >> "$ROOT/install.sh"
-append_script "$BIN/kubeauth_init" >> "$ROOT/install.sh"
-append_script "$BIN/kubefs_addons" >> "$ROOT/install.sh"
+append_script "$BIN/kubefs.sh"        >> "$ROOT/install.sh"
+append_script "$BIN/kubeauth_init.sh" >> "$ROOT/install.sh"
+append_script "$BIN/kubefs_addons.sh" >> "$ROOT/install.sh"

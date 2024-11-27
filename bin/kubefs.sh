@@ -2,6 +2,7 @@
 # https://github.com/dxlr8r/kubefs
 if \
 test "${KUBEFS_COMPLETION:-true}" = 'true' \
+&& case "${-:-}" in *i*) true;; *) false;; esac \
 && test -t 1 \
 && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
 eval "$(printf '%s\n' X2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIoKSB7CmxvY2FsIHdvcmRzPSIkMSIKbG9jYWwgY3VyPSR7Q09NUF9XT1JEU1tDT01QX0NXT1JEXX0KbG9jYWwgcmVzdWx0PSgpCmlmIFtbICIke2N1cjowOjF9IiA9PSAiLSIgXV07IHRoZW4KZWNobyAiJHdvcmRzIgplbHNlCmZvciB3b3JkIGluICR3b3JkczsgZG8KW1sgIiR7d29yZDowOjF9IiAhPSAiLSIgXV0gJiYgcmVzdWx0Kz0oIiR3b3JkIikKZG9uZQplY2hvICIke3Jlc3VsdFsqXX0iCmZpCn0KX2t1YmVmc19jb21wbGV0aW9ucygpIHsKbG9jYWwgY3VyPSR7Q09NUF9XT1JEU1tDT01QX0NXT1JEXX0KbG9jYWwgY29tcHdvcmRzPSgiJHtDT01QX1dPUkRTW0BdOjE6JENPTVBfQ1dPUkQtMX0iKQpsb2NhbCBjb21wbGluZT0iJHtjb21wd29yZHNbKl19IgpjYXNlICIkY29tcGxpbmUiIGluCidsb2NrIHNlc3Npb24gdG9nZ2xlJyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiJChmaW5kICIke0tVQkVGU19ST09UOi0kSE9NRS8ua3ViZX0iIC10eXBlIGYgLW5hbWUgJy5rdWJlY29uZmlnJyAyPi9kZXYvbnVsbCkiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBnbG9iYWwgdG9nZ2xlJyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiJChmaW5kICIke0tVQkVGU19ST09UOi0kSE9NRS8ua3ViZX0iIC10eXBlIGYgLW5hbWUgJy5rdWJlY29uZmlnJyAyPi9kZXYvbnVsbCkiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBzZXNzaW9uIGxpc3QnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBnbG9iYWwgbGlzdCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIHNlc3Npb24gc2V0JyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiJChmaW5kICIke0tVQkVGU19ST09UOi0kSE9NRS8ua3ViZX0iIC10eXBlIGYgLW5hbWUgJy5rdWJlY29uZmlnJyAyPi9kZXYvbnVsbCkiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBzZXNzaW9uIGRlbCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIHNlc3Npb24gZ2V0JyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiIikiIC0tICIkY3VyIikKOzsKJ2xvY2sgZ2xvYmFsIHNldCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiQoZmluZCAiJHtLVUJFRlNfUk9PVDotJEhPTUUvLmt1YmV9IiAtdHlwZSBmIC1uYW1lICcua3ViZWNvbmZpZycgMj4vZGV2L251bGwpIikiIC0tICIkY3VyIikKOzsKJ2xvY2sgZ2xvYmFsIGRlbCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIGdsb2JhbCBnZXQnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBzZXNzaW9uJyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAic2V0IHRvZ2dsZSBkZWwgZ2V0IGxpc3QiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBnbG9iYWwnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICJzZXQgdG9nZ2xlIGRlbCBnZXQgbGlzdCIpIiAtLSAiJGN1ciIpCjs7CidsaXN0LWFsbCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7CidsaXN0JyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiIikiIC0tICIkY3VyIikKOzsKJ2F1dGgnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIkKGZpbmQgIiR7S1VCRUZTX1JPT1Q6LSRIT01FLy5rdWJlfSIgLXR5cGUgZiAtbmFtZSAnLmt1YmVhdXRoJyAyPi9kZXYvbnVsbCkiKSIgLS0gIiRjdXIiKQo7OwonbG9jaycqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgImdsb2JhbCBzZXNzaW9uIikiIC0tICIkY3VyIikKOzsKJ2dldCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7CidjZCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiQoZmluZCAiJHtLVUJFRlNfUk9PVDotJEhPTUUvLmt1YmV9IiAtdHlwZSBmIC1uYW1lICcua3ViZWNvbmZpZycgLWV4ZWMgZGlybmFtZSB7fSBcOyAyPi9kZXYvbnVsbCkiKSIgLS0gIiRjdXIiKQo7OwoqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgImdldCBjZCBsaXN0IGxpc3QtYWxsIGF1dGggbG9jayIpIiAtLSAiJGN1ciIpCjs7CmVzYWMKfSAmJgpjb21wbGV0ZSAtRiBfa3ViZWZzX2NvbXBsZXRpb25zIGt1YmVmcwo= | base64 --decode)"
@@ -14,7 +15,7 @@ printf -- "$@" >/dev/stderr
 fi
 }
 _kfm_iprintf() {
-if test -t 1 || test -n "${KUBEFS_DEBUG:-}"; then
+if case "${-:-}" in *i*) true;; *) false;; esac || test -n "${KUBEFS_DEBUG:-}"; then
 if test "$#" -eq 0; then
 cat | _kfs_printf_stderr
 else
@@ -169,7 +170,7 @@ else
 _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
 fi
 }
-kubefs() {
+_kfs_cmd() {
 case ${1:-get} in
 ctl|kubectl)
 shift
@@ -180,15 +181,19 @@ printf '%s\n' "$(_kfs_find_kubeconfig)"
 ;;
 cd|jump)
 shift
-_kfs_cd "${1:-}"
+if test -z "${1:-}"; then
+_kfs_cmd get
+else
+_kfs_cd "$1"
+fi
 ;;
 ls|list)
-printf 'KUBECONFIG="%s"\n' "$(kubefs get)"
+printf 'KUBECONFIG="%s"\n' "$(_kfs_cmd get)"
 ;;
 la|lsa|list-all)
-kubefs list
-kubefs lock session list
-kubefs lock global list
+_kfs_cmd list
+_kfs_cmd lock session list
+_kfs_cmd lock global list
 ;;
 auth|authenticate)
 _kfs_kubeauth "${2:-}"
@@ -249,13 +254,6 @@ help|*)
 ;;
 esac
 }
-if test "${#:-0}" -gt 0; then
-kubefs "$@"
-elif ! test -t 1; then
-kubefs get
-else
-unset KUBECONFIG LOCK_KUBECONFIG
-fi
 _kfs_which() {
 while test "$#" -gt 0; do
 command -v "$1" >/dev/null 2>&1 || return $?
@@ -263,7 +261,7 @@ shift
 done
 }
 _kfs_alias() {
-alias $1="kubefs $2"
+alias $1="_kfs_cmd $2"
 _kfs_which _kubefs_completions || return 0
 eval "$(printf "
 _kubefs_completions_$1() {
@@ -276,9 +274,14 @@ _kubefs_completions
 complete -o default -F _kubefs_completions_$1 $1
 ")"
 }
-alias kubectl='_kfs_kubectl'
+_kfs_init_sourced() {
+alias kubefs='_kfs_cmd'
+}
+_kfs_init_interactive() {
+unset KUBECONFIG LOCK_KUBECONFIG
 if test "${KUBEFS_RECOMMENDED_ALIAS:-true}" = 'true'; then
-alias kf='kubefs'
+alias kubectl='_kfs_kubectl'
+alias kf='_kfs_cmd'
 _kfs_which _kubefs_completions && complete -F _kubefs_completions kf || :
 fi
 if test "${KUBEFS_OPTIONAL_ALIAS:-true}" = 'true'; then
@@ -286,10 +289,35 @@ _kfs_alias kfg 'lock global toggle'
 _kfs_alias kfe 'lock session set'
 _kfs_alias kfl 'lock session toggle'
 _kfs_alias kfc 'cd'
-alias kfls='kubefs list-all'
-alias kfa='kubefs auth'
+alias kfls='_kfs_cmd list-all'
+alias kfa='_kfs_cmd auth'
 for tool in $(printf '%s\n' ${KUBEFS_TOOL:-helm} | tr ':' ' '); do
 command -v $tool >/dev/null 2>&1 \
 && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
 done
+fi
+}
+if test "$(basename -- "$0" '.sh')" = 'kubefs'; then
+_kfs_cmd "$@"
+printf -- '---
+WARNING: executing `kubefs` as an executable is not recommended.\n
+Only the following commands fill work in this mode:\n
+- ctl
+- get
+- ls
+- lsa, except session
+- auth
+- lock global\n
+The recommended way is to source it, that be in your shell or script.
+---\n' \
+| sed -E 's#^\s{2}##' | _kfs_printf_stderr
+else
+_kfs_init_sourced
+if
+case "${-:-}" in *i*) true;; *) false;; esac &&
+test -t 1 &&
+test "${#:-0}" -eq 0
+then
+_kfs_init_interactive
+fi
 fi
