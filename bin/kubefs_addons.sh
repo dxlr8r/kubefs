@@ -111,7 +111,11 @@ if test -e "${1:-$(pwd)}/.kubeauth"; then
 printf 'ERROR: `%s` already exists.\n' "${1:-}/.kubeauth" > /dev/stderr
 return 1
 else
-printf '%b' '#!/bin/sh\nset -e\n. "$HOME/.local/share/kubefs/kubeauth_init.sh"\n\nif test -z "${KUBE_AUTHENTICATED:-}"; then\n  # myauth_cmd\n  # kubectl config use-context myctx\nfi\n' \
-> "${1:-$(pwd)}/.kubeauth" 
+printf '#!/bin/sh\nset -e\n. %s\n\nif test -z "${KUBE_AUTHENTICATED:-}"; then\n  # myauth_cmd\n  # kubectl config use-context myctx\nfi\n' \
+"$(\
+test -f /usr/share/kubefs/kubeauth_init.sh \
+&& printf '/usr/share/kubefs/kubeauth_init.sh' \
+|| printf '$HOME/.local/share/kubefs/kubeauth_init.sh')" \
+> "${1:-$(pwd)}/.kubeauth"
 fi
 }

@@ -144,7 +144,11 @@ kubeauth_init() {
     return 1
   else
     # needs to be escaped, otherwise `build.sh` will strip comments and leading whitespace
-    printf '%b' '#!/bin/sh\nset -e\n. "$HOME/.local/share/kubefs/kubeauth_init.sh"\n\nif test -z "${KUBE_AUTHENTICATED:-}"; then\n  # myauth_cmd\n  # kubectl config use-context myctx\nfi\n' \
+    printf '#!/bin/sh\nset -e\n. %s\n\nif test -z "${KUBE_AUTHENTICATED:-}"; then\n  # myauth_cmd\n  # kubectl config use-context myctx\nfi\n' \
+    "$(\
+        test -f /usr/share/kubefs/kubeauth_init.sh \
+          && printf '/usr/share/kubefs/kubeauth_init.sh' \
+        || printf '$HOME/.local/share/kubefs/kubeauth_init.sh')" \
     > "${1:-$(pwd)}/.kubeauth"
   fi
 }
