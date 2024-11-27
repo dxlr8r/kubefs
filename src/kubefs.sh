@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # KUBEFS
-# =========
+# ======
 
 _kfs_printf_stderr() {
   if test "$#" -eq 0; then
