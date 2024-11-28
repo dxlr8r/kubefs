@@ -79,13 +79,9 @@ cat completely.bash | strip | b64 > "$SRC/kubefs-completions.bash"
 
 cat << EOF | strip | add_credits > "$BIN/kubefs.sh"
 #!/bin/sh
-if \\
-  test "\${KUBEFS_COMPLETION:-true}" = 'true' \\
-  && case "\${-:-}" in *i*) true;; *) false;; esac \\
-  && test -t 1 \\
-  && command -v _get_comp_words_by_ref >/dev/null 2>&1; then
+_kfs_bash_complete() {
   eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash") | base64 --decode)"
-fi
+}
 $(awk 'NR > 1' "$SRC/kubefs.sh")
 EOF
 
@@ -98,7 +94,11 @@ cat "$SRC/kubeauth_init.sh" | add_credits > "$BIN/kubeauth_init.sh"
 
 cat << EOF | add_credits > "$ROOT/install.sh"
 #!/bin/sh
-KUBEFS_DIR=\${KUBEFS_DIR:-"\$HOME/.local/share/kubefs"}
+if test \${UID:--1} -eq 0; then
+  : \${KUBEFS_DIR:="/usr/share/kubefs"}
+else
+  : \${KUBEFS_DIR:="\$HOME/.local/share/kubefs"}
+fi
 mkdir -p "\$KUBEFS_DIR"
 EOF
 

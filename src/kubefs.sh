@@ -174,10 +174,18 @@ _kfs_kubectl() (
 )
 
 _kfs_cd() {
-  if test -f "$1/.kubeconfig"; then
-    command cd -- "$1"
+  if test -z "${1:-}"; then
+    if _kfs_which _kfs_cmd_cd_hook; then
+      _kfs_cmd_cd_hook
+    else
+      _kfs_cmd get
+    fi
   else
-    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
+    if test -f "$1/.kubeconfig"; then
+      command cd -- "$1"
+    else
+      _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
+    fi
   fi
 }
 
@@ -192,11 +200,7 @@ _kfs_cmd() {
   ;;
   cd|jump)
     shift
-    if test -z "${1:-}"; then
-      _kfs_cmd get
-    else
-      _kfs_cd "$1"
-    fi
+    _kfs_cd "${1:-}"
   ;;
   ls|list)
     printf 'KUBECONFIG="%s"\n' "$(_kfs_cmd get)"
@@ -304,6 +308,14 @@ _kfs_init_sourced() {
 _kfs_init_interactive() {
   # do not inherit from muxer etc.
   unset KUBECONFIG LOCK_KUBECONFIG
+
+  # enable bash completion for kubefs
+  if
+    test "${KUBEFS_COMPLETION:-true}" = 'true' &&
+    _kfs_which _get_comp_words_by_ref
+  then
+    _kfs_bash_complete
+  fi
 
   # recommended
   if test "${KUBEFS_RECOMMENDED_ALIAS:-true}" = 'true'; then
