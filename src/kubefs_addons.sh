@@ -144,7 +144,6 @@ kubeauth_init() {
     return 1
   else
     # needs to be escaped, otherwise `build.sh` will strip comments and leading whitespace
-    printf '%b' '#!/bin/sh\nset -e\n\n# source kubeauth_init.sh\n. $HOME/.local/share/kubefs/kubeauth_init.sh 2>/dev/null || \\\n. /usr/share/kubefs/
-kubeauth_init.sh\n\n# if already athenticated, exit\ntest -n "${KUBE_AUTHENTICATED:-}" && exit || :\n\n# myauth_cmd\n' > "${1:-$(pwd)}/.kubeauth"
+    printf '%b' '#!/bin/sh\nset -e\n\n# source kubeauth_init.sh\n. $HOME/.local/share/kubefs/kubeauth_init.sh 2>/dev/null || \\\n. /usr/share/kubefs/kubeauth_init.sh\n\n# if already athenticated, exit\ntest -n "${KUBE_AUTHENTICATED:-}" && exit || :\n\n# myauth_cmd\n' > "${1:-$(pwd)}/.kubeauth"
   fi
 }
