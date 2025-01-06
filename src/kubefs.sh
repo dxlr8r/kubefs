@@ -4,7 +4,7 @@
 # ======
 
 _kfs_printf_stderr() {
-  if test "$#" -eq 0; then
+  if test $# -eq 0; then
     _kfs_printf_stderr '%s\n' "$(cat)"
   else
     printf -- "$@" >/dev/stderr
@@ -13,7 +13,7 @@ _kfs_printf_stderr() {
 
 _kfm_iprintf() {
   if case "${-:-}" in *i*) true;; *) false;; esac || test -n "${KUBEFS_DEBUG:-}"; then
-    if test "$#" -eq 0; then
+    if test $# -eq 0; then
       cat | _kfs_printf_stderr
     else
       _kfs_printf_stderr "$@"
@@ -23,7 +23,7 @@ _kfm_iprintf() {
 
 _kfs_debug() {
   if test -n "${KUBEFS_DEBUG:-}"; then
-    if test "$#" -eq 0; then
+    if test $# -eq 0; then
       cat | _kfs_printf_stderr
     else
       _kfs_printf_stderr "$@"
@@ -143,9 +143,9 @@ _kfs_lock_global_get() (
 )
 
 _kfs_kubeauth() (
-  if test -n "${LOCK_KUBECONFIG:-}"; then
-    _kfs_printf_stderr '# INFO: Can not execute authenticate while `LOCK_KUBECONFIG` is set.\n'
-    return 0
+  if test -z "$1" -a -n "${LOCK_KUBECONFIG:-}"; then
+    _kfs_printf_stderr '# INFO: `LOCK_KUBECONFIG` is set, attempting to deduct `.kubeauth`.\n'
+    set -- "$LOCK_KUBECONFIG"
   fi
 
   _kfs_dirname=$(_kfs_dirname "${1:-}")
@@ -159,7 +159,7 @@ _kfs_kubeauth() (
   test -n "$search_kubeauth"; then
     kubeauth="$search_kubeauth"
   else
-    _kfs_printf_stderr "# WARNING: Could not find any \`.kubeauth\` in path or parents' paths\n"
+    _kfs_printf_stderr "# WARNING: Could not find any \`.kubeauth\` in path or parents' paths.\n"
     return 1
   fi
   test -x "$kubeauth" || chmod +x "$kubeauth"
@@ -275,7 +275,7 @@ _kfs_cmd() {
 # ==================
 
 _kfs_which() {
-  while test "$#" -gt 0; do
+  while test $# -gt 0; do
     command -v "$1" >/dev/null 2>&1 || return $?
     shift
   done
