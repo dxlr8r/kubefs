@@ -66,6 +66,21 @@ add_credits() (
   fi
 )
 
+add_as_heredoc() (
+  _var="$1"
+  _here="$(cat "$2")"
+  _data="$(cat)"
+
+  printf '%s\n' "$_data"
+  printf "%s=\$(cat <<'EOF'\n" $_var
+  printf '%s\nEOF\n)\n' "$_here"
+)
+
+# _KFS_HELP=$(cat <<'EOF'
+
+# EOF
+# )
+
 # cd to path of script
 cd "$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 SRC='../src'
@@ -77,7 +92,7 @@ ROOT='..'
 completely generate
 cat completely.bash | strip | b64 > "$SRC/kubefs-completions.bash"
 
-cat << EOF | strip | add_credits > "$BIN/kubefs.sh"
+cat << EOF | strip | add_credits | add_as_heredoc _KFS_HELP "$SRC/kubefs-help.md" > "$BIN/kubefs.sh"
 #!/bin/sh
 _kfs_bash_complete() {
   eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash") | base64 --decode)"

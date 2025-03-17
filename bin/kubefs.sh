@@ -11,7 +11,7 @@ printf -- "$@" >/dev/stderr
 fi
 }
 _kfm_iprintf() {
-if case "${-:-}" in *i*) true;; *) false;; esac || test -n "${KUBEFS_DEBUG:-}"; then
+if case "${-:-}" in *i*) true;; *) false;; esac || test "${KUBEFS_DEBUG:-false}" = 'true'; then
 if test $# -eq 0; then
 cat | _kfs_printf_stderr
 else
@@ -20,7 +20,7 @@ fi
 fi
 }
 _kfs_debug() {
-if test -n "${KUBEFS_DEBUG:-}"; then
+if test "${KUBEFS_DEBUG:-false}" = 'true'; then
 if test $# -eq 0; then
 cat | _kfs_printf_stderr
 else
@@ -138,13 +138,14 @@ _kfs_printf_stderr '# INFO: `LOCK_KUBECONFIG` is set, attempting to deduct `.kub
 set -- "$LOCK_KUBECONFIG"
 fi
 _kfs_dirname=$(_kfs_dirname "${1:-}")
-if \
+if
 search_kubeauth=$(\
 _kfs_parents "$_kfs_dirname" \
 | xargs -I {} ls -1 {}/.kubeauth 2>/dev/null \
 | head -n1 \
-);
-test -n "$search_kubeauth"; then
+)
+test -n "$search_kubeauth"
+then
 kubeauth="$search_kubeauth"
 else
 _kfs_printf_stderr "# WARNING: Could not find any \`.kubeauth\` in path or parents' paths.\n"
@@ -161,21 +162,36 @@ command kubectl "$@"
 )
 _kfs_cd() {
 if test -z "${1:-}"; then
-if _kfs_which _kfs_cmd_cd_hook; then
-_kfs_cmd_cd_hook
+if
+test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
+test -f "$(_kfs_lock_session_get)"
+then
+set -- "$(dirname "$(_kfs_lock_session_get)")"
+elif
+test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
+test -f "$(_kfs_lock_global_get)"
+then
+set -- "$(dirname "$(_kfs_lock_global_get)")"
 else
 _kfs_cmd get
+return 0
 fi
-else
+fi
 if test -f "$1/.kubeconfig"; then
 command cd -- "$1"
 else
 _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
+return 0
 fi
+if
+test "${KUBEFS_CD_SESSION_LOCK:-false}" = 'true' &&
+test "${LOCK_KUBECONFIG:-}" != "${1:-}"
+then
+_kfs_lock_session_set "${1:-}"
 fi
 }
 _kfs_cmd() {
-case ${1:-get} in
+case ${1:-} in
 ctl|kubectl)
 shift
 _kfs_kubectl "$@"
@@ -197,6 +213,12 @@ _kfs_cmd lock global list
 ;;
 auth|authenticate)
 _kfs_kubeauth "${2:-}"
+if
+test "${KUBEFS_AUTH_AUTO_CD:-false}" = 'true' &&
+test -n "${2:-}"
+then
+_kfs_cd "$(dirname "${2:-}")"
+fi
 ;;
 lock)
 case ${2:-session} in
@@ -217,9 +239,6 @@ _kfs_lock_global_get list
 set|add|mk)
 _kfs_lock_global_set "${4:-}"
 ;;
-help|*)
-:
-;;
 esac
 ;;
 session)
@@ -239,18 +258,12 @@ _kfs_lock_session_get list
 set|add|mk)
 _kfs_lock_session_set "${4:-}"
 ;;
-help|*)
-:
+esac
 ;;
 esac
 ;;
 help|*)
-:
-;;
-esac
-;;
-help|*)
-:
+printf '%s\n' "$_KFS_HELP"
 ;;
 esac
 }
@@ -295,9 +308,9 @@ _kfs_alias kfg 'lock global toggle'
 _kfs_alias kfe 'lock session set'
 _kfs_alias kfl 'lock session toggle'
 _kfs_alias kfc 'cd'
+_kfs_alias kfa 'auth'
 alias kfls='_kfs_cmd list-all'
-alias kfa='_kfs_cmd auth'
-for tool in $(printf '%s\n' ${KUBEFS_TOOL:-helm} | tr ':' ' '); do
+for tool in $(printf '%s\n' ${KUBEFS_TOOL:-tk:helm} | tr ':' ' '); do
 command -v $tool >/dev/null 2>&1 \
 && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
 done
@@ -327,3 +340,119 @@ then
 _kfs_init_interactive
 fi
 fi
+_KFS_HELP=$(cat <<'EOF'
+Manage multiple kubeconfigs with your filesystem
+
+# Usage
+
+kubefs  <command1> [command2] ... [commandN] [path]
+
+# Available commands
+
+get
+  prints the current KUBECONFIG
+
+cd [path]
+  cd to a directory containing a .kubeconfig, and lock session. If no argument
+  is given it will cd to the current KUBECONFIG.
+
+list
+  prints the current KUBECONFIG as an env variable
+
+list-all
+  shows shell, session and globally locked KUBECONFIG
+
+auth [path]
+  executes `.kubeauth` in path, if path not specified it will use current
+  working directory
+
+lock
+  <global/session>
+    <set> [path]
+      locks KUBECONFIG to path
+    <toggle>
+      toggles lock
+    <del>
+      delete lock
+    <get>
+      prints the current lock if any
+    <list>
+      prints the current lock as an env variable
+
+# Available arguments
+
+path  a file or directory depending on the command. If a directory is given, and
+      the command does not find .kubeconfig or .kubeauth, it will search for the
+      first occurence of the file in the parent tree.
+
+# Options
+
+KUBEFS_CD_SESSION (default: `false`)
+  when using `kubefs cd` without `path` as an argument, set path to the session
+  lock's directory if set, if not attempt global lock's directory.
+
+KUBEFS_CD_SESSION_LOCK (default: `false`)
+  when using `kubefs cd` with `path` as an argument, do a
+  `kubefs lock session set` towards that `path`.
+
+KUBEFS_AUTH_AUTO_CD (default: `false`)
+  when using `kubefs auth` with `path` as an argument, cd to that path.
+
+KUBEFS_RECOMMENDED_ALIAS (default: `true`)
+  recommended aliases that makes short aliases of long commands. Only turn off
+  if you know what you are doing.
+    - `kf` -> `kubefs`
+    - `kubefs` -> `kubefs`, set `KUBECONFIG` to `.kubeconfig`'s path
+
+KUBEFS_OPTIONAL_ALIAS  (default: `true`)
+  recommended aliases that makes short aliases of long commands.
+    - `kfg` `kubefs lock global toggle`
+    - `kfe` `kubefs lock session set`
+    - `kfl` `kubefs lock session toggle`
+    - `kfc` `kubefs cd`
+    - `kfa` `kubefs auth`
+    - `kfls` `kubefs list-all`
+    - for each tool in `KUBEFS_TOOL` set `KUBECONFIG` to `.kubeconfig`'s path 
+
+KUBEFS_TOOL (default: `tk:helm`)
+  a list of tools, separated by `:`. See `KUBEFS_OPTIONAL_ALIAS`.
+
+KUBEFS_COMPLETION (default: `true`)
+  automatic sourcing of kubefs completion (bash shell). Defaults to false if
+  bash is not the current shell.
+
+KUBEFS_DEBUG (default: `false`)
+  enable debugging
+
+# Examples
+## Options
+
+`KUBEFS_CD_SESSION`, `KUBEFS_CD_SESSION_LOCK`, `KUBEFS_AUTH_AUTO_CD`: while
+`false` by default, `true` is recommended for heavy shell users. Add to your
+~/.profile:
+
+```
+KUBEFS_CD_SESSION=true
+KUBEFS_CD_SESSION_LOCK=true
+KUBEFS_AUTH_AUTO_CD=true
+```
+
+# About
+
+## Precedent
+
+`kubefs` will tell `kubectl` to use a config file in the follow order:
+
+1. lock session (`LOCK_KUBECONFIG`)
+2. `.kubeconfig` in current path or first occurence in the parent tree.
+3. lock global (`~/kube/config`)
+
+# Notes
+
+## KUBECONFIG
+
+When using/sourcing `kubefs` with `KUBEFS_RECOMMENDED_ALIAS=true` (default) you
+can no longer specify `KUBECONFIG`, use `kubectl --kubeconfig` instead, or
+disable `KUBEFS_RECOMMENDED_ALIAS=false` and `unalias kubectl` in open shells.
+EOF
+)

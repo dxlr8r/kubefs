@@ -5,6 +5,7 @@
 # tmp
 _*
 build/completely.bash
+test.sh
 
 # OS generated files
 .DS_Store

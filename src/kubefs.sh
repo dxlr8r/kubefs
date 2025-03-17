@@ -12,7 +12,7 @@ _kfs_printf_stderr() {
 }
 
 _kfm_iprintf() {
-  if case "${-:-}" in *i*) true;; *) false;; esac || test -n "${KUBEFS_DEBUG:-}"; then
+  if case "${-:-}" in *i*) true;; *) false;; esac || test "${KUBEFS_DEBUG:-false}" = 'true'; then
     if test $# -eq 0; then
       cat | _kfs_printf_stderr
     else
@@ -21,8 +21,10 @@ _kfm_iprintf() {
   fi
 }
 
+
+
 _kfs_debug() {
-  if test -n "${KUBEFS_DEBUG:-}"; then
+  if test "${KUBEFS_DEBUG:-false}" = 'true'; then
     if test $# -eq 0; then
       cat | _kfs_printf_stderr
     else
@@ -150,13 +152,14 @@ _kfs_kubeauth() (
 
   _kfs_dirname=$(_kfs_dirname "${1:-}")
   # try to find first occuring .kubeauth in the parent tree
-  if \
-  search_kubeauth=$(\
-    _kfs_parents "$_kfs_dirname" \
-    | xargs -I {} ls -1 {}/.kubeauth 2>/dev/null \
-    | head -n1 \
-  );
-  test -n "$search_kubeauth"; then
+  if
+    search_kubeauth=$(\
+      _kfs_parents "$_kfs_dirname" \
+      | xargs -I {} ls -1 {}/.kubeauth 2>/dev/null \
+      | head -n1 \
+    )
+    test -n "$search_kubeauth"
+  then
     kubeauth="$search_kubeauth"
   else
     _kfs_printf_stderr "# WARNING: Could not find any \`.kubeauth\` in path or parents' paths.\n"
@@ -174,23 +177,43 @@ _kfs_kubectl() (
 )
 
 _kfs_cd() {
+  # if no argument, set $1 to session or global lock (if set)
   if test -z "${1:-}"; then
-    if _kfs_which _kfs_cmd_cd_hook; then
-      _kfs_cmd_cd_hook
+    if
+      test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
+      test -f "$(_kfs_lock_session_get)"
+    then
+      set -- "$(dirname "$(_kfs_lock_session_get)")"
+    elif
+      test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
+      test -f "$(_kfs_lock_global_get)"
+    then
+      set -- "$(dirname "$(_kfs_lock_global_get)")"
     else
       _kfs_cmd get
+      return 0
     fi
+  fi
+  # if argument, cd if .kubeconfig found
+
+  if test -f "$1/.kubeconfig"; then
+    command cd -- "$1"
   else
-    if test -f "$1/.kubeconfig"; then
-      command cd -- "$1"
-    else
-      _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
-    fi
+    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
+    return 0
+  fi
+
+  # lock session unless is already current lock
+  if
+    test "${KUBEFS_CD_SESSION_LOCK:-false}" = 'true' &&
+    test "${LOCK_KUBECONFIG:-}" != "${1:-}"
+  then
+    _kfs_lock_session_set "${1:-}"
   fi
 }
 
 _kfs_cmd() {
-  case ${1:-get} in
+  case ${1:-} in
   ctl|kubectl)
     shift
     _kfs_kubectl "$@"
@@ -212,6 +235,12 @@ _kfs_cmd() {
   ;;
   auth|authenticate)
     _kfs_kubeauth "${2:-}"
+    if
+      test "${KUBEFS_AUTH_AUTO_CD:-false}" = 'true' &&
+      test -n "${2:-}"
+    then
+      _kfs_cd "$(dirname "${2:-}")"
+    fi
   ;;
   lock)
     case ${2:-session} in
@@ -231,9 +260,6 @@ _kfs_cmd() {
       ;;
       set|add|mk)
         _kfs_lock_global_set "${4:-}"
-      ;;
-      help|*)
-        :
       ;;
       esac
     ;;
@@ -255,18 +281,12 @@ _kfs_cmd() {
       set|add|mk)
         _kfs_lock_session_set "${4:-}"
       ;;
-      help|*)
-        :
-      ;;
       esac
-    ;;
-    help|*)
-      :
     ;;
     esac
   ;;
   help|*)
-    :
+    printf '%s\n' "$_KFS_HELP"
   ;;
   esac
 }
@@ -330,11 +350,12 @@ _kfs_init_interactive() {
     _kfs_alias kfe 'lock session set'
     _kfs_alias kfl 'lock session toggle'
     _kfs_alias kfc 'cd'
+    _kfs_alias kfa 'auth'
     alias kfls='_kfs_cmd list-all'
-    alias kfa='_kfs_cmd auth'
+
 
     # set KUBECONFIG for tool
-    for tool in $(printf '%s\n' ${KUBEFS_TOOL:-helm} | tr ':' ' '); do
+    for tool in $(printf '%s\n' ${KUBEFS_TOOL:-tk:helm} | tr ':' ' '); do
       command -v $tool >/dev/null 2>&1 \
       && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
     done
