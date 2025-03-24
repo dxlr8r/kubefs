@@ -316,7 +316,7 @@ _kfs_alias() {
     COMP_WORDS=( kubectl '$2' \"\${compl:- }\" )
     _kubefs_completions
   }
-  complete -o default -F _kubefs_completions_$1 $1
+  complete -o nosort -F _kubefs_completions_$1 $1
   ")"
 }
 

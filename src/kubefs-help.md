@@ -95,7 +95,6 @@ KUBEFS_AUTH_AUTO_CD=true
 ```
 
 # About
-
 ## Precedent
 
 `kubefs` will tell `kubectl` to use a config file in the follow order:
@@ -105,7 +104,6 @@ KUBEFS_AUTH_AUTO_CD=true
 3. lock global (`~/kube/config`)
 
 # Notes
-
 ## KUBECONFIG
 
 When using/sourcing `kubefs` with `KUBEFS_RECOMMENDED_ALIAS=true` (default) you

@@ -76,10 +76,10 @@ add_as_heredoc() (
   printf '%s\nEOF\n)\n' "$_here"
 )
 
-# _KFS_HELP=$(cat <<'EOF'
+add_nosort() (
+  cat | sed -e 's/complete -F/complete -o nosort -F/g'
+)
 
-# EOF
-# )
 
 # cd to path of script
 cd "$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -90,7 +90,7 @@ ROOT='..'
 # build `kubefs`
 
 completely generate
-cat completely.bash | strip | b64 > "$SRC/kubefs-completions.bash"
+cat completely.bash | add_nosort | strip | b64 > "$SRC/kubefs-completions.bash"
 
 cat << EOF | strip | add_credits | add_as_heredoc _KFS_HELP "$SRC/kubefs-help.md" > "$BIN/kubefs.sh"
 #!/bin/sh
