@@ -40,9 +40,9 @@ fi
 )
 _kfs_dirname() (
 if test -d "${1:-}"; then
-printf '%s\n' "$1"
+cd "$1"; pwd
 elif test -e "${1:-}"; then
-dirname "$1"
+cd "$(dirname "$1")"; pwd
 else
 :
 fi
@@ -61,8 +61,9 @@ _kfs_find_kubeconfig() (
 if test -n "${LOCK_KUBECONFIG:-}"; then
 candidate="$LOCK_KUBECONFIG"
 else
+_kfs_dirname=$(_kfs_dirname "${1:-}")
 candidate=$(\
-_kfs_parents "${1:-}" \
+_kfs_parents "$_kfs_dirname" \
 | xargs -I {} ls -1 {}/.kubeconfig 2>/dev/null \
 | head -n1 \
 )

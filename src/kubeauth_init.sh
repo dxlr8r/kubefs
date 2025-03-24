@@ -16,6 +16,6 @@ if ! test -f "${SPATH}/.kubeconfig"; then
 fi
 export KUBECONFIG="${SPATH}/.kubeconfig"
 
-kubectl auth can-i --list >/dev/null 2>&1 \
+timeout 1 kubectl version >/dev/null 2>&1 \
 && KUBE_AUTHENTICATED=true \
 || unset KUBE_AUTHENTICATED
