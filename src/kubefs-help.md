@@ -71,6 +71,9 @@ KUBEFS_OPTIONAL_ALIAS  (default: `true`)
     - `kfls` `kubefs list-all`
     - for each tool in `KUBEFS_TOOL` set `KUBECONFIG` to `.kubeconfig`'s path 
 
+KUBEFS_ROOT (default: `$HOME/.kube`)
+  where to search for .kubeconfig and .kubeauth. Recommended to keep unchanged.
+
 KUBEFS_TOOL (default: `tk:helm`)
   a list of tools, separated by `:`. See `KUBEFS_OPTIONAL_ALIAS`.
 

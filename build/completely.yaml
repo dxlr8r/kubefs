@@ -1,14 +1,19 @@
 kubefs:
 - get
-- cd
 - list
 - list-all
+- find
+- cd
 - auth
 - lock
 
 kubefs get: [""]
 kubefs list: [""]
 kubefs list-all: [""]
+
+kubefs find:
+- kubeauth
+- kubeconfig
 
 kubefs auth:
 - $(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeauth' 2>/dev/null | LC_COLLATE=C.UTF-8 sort)

@@ -233,6 +233,16 @@ _kfs_cmd() {
     _kfs_cmd lock session list
     _kfs_cmd lock global list
   ;;
+  find)
+    case ${2:-kubeconfig} in
+      kubeauth)
+        find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeauth' 2>/dev/null | LC_COLLATE=C.UTF-8 sort
+      ;;
+      kubeconfig)
+        find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort
+      ;;
+    esac
+  ;;
   auth|authenticate)
     _kfs_kubeauth "${2:-}"
     if
@@ -351,6 +361,7 @@ _kfs_init_interactive() {
     _kfs_alias kfl 'lock session toggle'
     _kfs_alias kfc 'cd'
     _kfs_alias kfa 'auth'
+    _kfs_alias kff 'find'
     alias kfls='_kfs_cmd list-all'
 
 
