@@ -21,8 +21,6 @@ _kfm_iprintf() {
   fi
 }
 
-
-
 _kfs_debug() {
   if test "${KUBEFS_DEBUG:-false}" = 'true'; then
     if test $# -eq 0; then
@@ -34,10 +32,10 @@ _kfs_debug() {
 }
 
 _kfs_parents() (
-  dirname="${1:-$(pwd)}"
-  if test "$dirname" != '/'; then
-    printf '%s\n' "$dirname"
-    _kfs_parents "$(dirname "$dirname")"
+  test -n "${1:-}" || return 1
+  if test "$1" != '/'; then
+    printf '%s\n' "$1"
+    _kfs_parents "$(dirname "$1")"
   else
     printf '/\n'
     return 0
@@ -66,28 +64,44 @@ _kfs_resolve_symlink() {
   }'
 }
 
-_kfs_find_kubeconfig() (
-  if test -n "${LOCK_KUBECONFIG:-}"; then
-    candidate="$LOCK_KUBECONFIG"
+_kfs_find_kubefile() (
+  set -- "$(_kfs_dirname "${1:-}")" "${2:-.kubeconfig}"
+  # find first occurence of .kubeconfig in the parent tree
+  kubefile=$(\
+    _kfs_parents "$1" \
+    | xargs -I {} ls -1 {}/$2 2>/dev/null \
+    | head -n1 \
+  )
+  _kfs_debug '# KUBEFILE="%s"\n' "$kubefile"
+  test -z "$kubefile" || printf '%s\n' "$kubefile"
+)
+
+_kfs_find_any_kubeconfig() (
+  if
+    kubeconfig=$(_kfs_find_kubefile "${1:-}")
+    test -n "$kubeconfig"
+  then
+    :
+  elif test -n "${LOCK_KUBECONFIG:-}"; then
+    kubeconfig="$LOCK_KUBECONFIG"
   else
-    _kfs_dirname=$(_kfs_dirname "${1:-}")
-    # find first occurence of .kubeconfig in the parent tree
-    candidate=$(\
-      _kfs_parents "$_kfs_dirname" \
-      | xargs -I {} ls -1 {}/.kubeconfig 2>/dev/null \
-      | head -n1 \
-    )
+    kubeconfig="$HOME/.kube/config"
   fi
-  kubeconfig=${candidate:-$HOME/.kube/config}
-  printf '%s\n' "$kubeconfig"
+
   _kfs_debug '# KUBECONFIG="%s"\n' "$kubeconfig"
+  printf '%s\n' "$kubeconfig"
 )
 
 _kfs_lock_session_set() {
-  _kfs_dirname=$(_kfs_dirname "${1:-}")
-  export LOCK_KUBECONFIG=$(_kfs_find_kubeconfig "$_kfs_dirname")
-  export KUBECONFIG="$LOCK_KUBECONFIG"
-  _kfm_iprintf '# LOCK_KUBECONFIG="%s"\n' "$LOCK_KUBECONFIG"
+  set -- "$(_kfs_find_kubefile "${1:-.}")"
+  if test -z "${1:-}"; then
+    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$(pwd)"
+    return 1
+  else
+    export LOCK_KUBECONFIG=$1
+    export KUBECONFIG=$LOCK_KUBECONFIG
+    _kfm_iprintf '# LOCK_KUBECONFIG="%s"\n' "$LOCK_KUBECONFIG"
+  fi
 }
 _kfs_lock_session_del() {
   test "${KUBECONFIG:-}" = "${LOCK_KUBECONFIG:-}" && unset KUBECONFIG || :
@@ -110,16 +124,15 @@ _kfs_lock_session_get() (
 )
 
 _kfs_lock_global_set() (
-  _kfs_dirname=$(_kfs_dirname "${1:-}")
-  kubeconfig=$(_kfs_find_kubeconfig "$_kfs_dirname")
-  if test "$kubeconfig" = "$HOME/.kube/config"; then
+  set -- "$(_kfs_find_kubefile "${1:-.}")"
+  if test -z "${1:-}"; then
     _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$(pwd)"
     return 1
   else
     test -L "$HOME/.kube/config" && unlink "$HOME/.kube/config" || :
     if ! test -e "$HOME/.kube/config"; then
-      ln -s "$kubeconfig" "$HOME/.kube/config"
-      _kfm_iprintf '# ln -s "%s" "%s"\n' "$kubeconfig" "$HOME/.kube/config"
+      ln -s "$1" "$HOME/.kube/config"
+      _kfm_iprintf '# ln -s "%s" "%s"\n' "$1" "$HOME/.kube/config"
     else
       _kfs_printf_stderr '# ERROR: `%s` not a symlink.\n' "$HOME/.kube/config"
     fi
@@ -146,35 +159,27 @@ _kfs_lock_global_get() (
   fi
 )
 
-_kfs_kubeauth() (
-  if test -z "$1" -a -n "${LOCK_KUBECONFIG:-}"; then
+_kfs_kubeauth() {
+  if test -z "${1:-}" -a -n "${LOCK_KUBECONFIG:-}"; then
     _kfs_printf_stderr '# INFO: `LOCK_KUBECONFIG` is set, attempting to deduct `.kubeauth`.\n'
-    set -- "$LOCK_KUBECONFIG"
+    set -- "$(_kfs_find_kubefile "$LOCK_KUBECONFIG" '.kubeauth')" _
+  else
+    set -- "$(_kfs_find_kubefile "${1:-.}" '.kubeauth')"
   fi
 
-  _kfs_dirname=$(_kfs_dirname "${1:-}")
-  # try to find first occuring .kubeauth in the parent tree
-  if
-    search_kubeauth=$(\
-      _kfs_parents "$_kfs_dirname" \
-      | xargs -I {} ls -1 {}/.kubeauth 2>/dev/null \
-      | head -n1 \
-    )
-    test -n "$search_kubeauth"
-  then
-    kubeauth="$search_kubeauth"
-  else
+  if test -z "$1"; then
     _kfs_printf_stderr "# WARNING: Could not find any \`.kubeauth\` in path or parents' paths.\n"
     return 1
   fi
-  test -x "$kubeauth" || chmod +x "$kubeauth"
-  _kfs_debug '# kubeauth="%s"\n' "$kubeauth"
-  export KUBECONFIG=$(_kfs_find_kubeconfig "$_kfs_dirname")
-  "$kubeauth"
-)
+
+  test -x "$1" || chmod +x "$1"
+  _kfs_debug '# kubeauth="%s"\n' "$1"
+  "$1"
+  test -z "${2:-}" || _kfs_lock_session_set "$1"
+}
 
 _kfs_kubectl() (
-  export KUBECONFIG=$(_kfs_find_kubeconfig)
+  export KUBECONFIG=$(_kfs_find_any_kubeconfig)
   command kubectl "$@"
 )
 
@@ -208,20 +213,20 @@ _kfs_cd() {
   # lock session unless is already current lock
   if
     test "${KUBEFS_CD_SESSION_LOCK:-false}" = 'true' &&
-    test "${LOCK_KUBECONFIG:-}" != "${1:-}"
+    test "${LOCK_KUBECONFIG:-}" != "$1"/.kubeconfig
   then
-    _kfs_lock_session_set "${1:-}"
+    _kfs_lock_session_set "$1"
   fi
 }
 
 _kfs_cmd() {
-  case ${1:-} in
+  case ${1:-get} in
   ctl|kubectl)
     shift
     _kfs_kubectl "$@"
   ;;
   g|get)
-    printf '%s\n' "$(_kfs_find_kubeconfig)"
+    printf '%s\n' "$(_kfs_find_any_kubeconfig)"
   ;;
   cd|jump)
     shift
