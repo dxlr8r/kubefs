@@ -160,7 +160,6 @@ fi
 test -x "$1" || chmod +x "$1"
 _kfs_debug '# kubeauth="%s"\n' "$1"
 "$1"
-test -z "${2:-}" || _kfs_lock_session_set "$1"
 }
 _kfs_kubectl() (
 export KUBECONFIG=$(_kfs_find_any_kubeconfig)

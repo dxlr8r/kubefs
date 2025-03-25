@@ -175,7 +175,8 @@ _kfs_kubeauth() {
   test -x "$1" || chmod +x "$1"
   _kfs_debug '# kubeauth="%s"\n' "$1"
   "$1"
-  test -z "${2:-}" || _kfs_lock_session_set "$1"
+  # allow for .kubeauth and .kubeconfig to not be in the same directory, besides KUBEFS_CD_SESSION_LOCK does the same
+  # test -z "${2:-}" || _kfs_lock_session_set "$1"
 }
 
 _kfs_kubectl() (
