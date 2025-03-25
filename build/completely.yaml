@@ -45,3 +45,6 @@ kubefs lock session list: [""]
 
 kubefs cd:
 - $(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' -exec dirname {} \; 2>/dev/null | LC_COLLATE=C.UTF-8 sort)
+
+completely_options:
+  complete_options: -o nosort
