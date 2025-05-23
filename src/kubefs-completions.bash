@@ -1,1 +1,115 @@
-X2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIoKSB7CmxvY2FsIHdvcmRzPSIkMSIKbG9jYWwgY3VyPSR7Q09NUF9XT1JEU1tDT01QX0NXT1JEXX0KbG9jYWwgcmVzdWx0PSgpCmlmIFtbICIke2N1cjowOjF9IiA9PSAiLSIgXV07IHRoZW4KZWNobyAiJHdvcmRzIgplbHNlCmZvciB3b3JkIGluICR3b3JkczsgZG8KW1sgIiR7d29yZDowOjF9IiAhPSAiLSIgXV0gJiYgcmVzdWx0Kz0oIiR3b3JkIikKZG9uZQplY2hvICIke3Jlc3VsdFsqXX0iCmZpCn0KX2t1YmVmc19jb21wbGV0aW9ucygpIHsKbG9jYWwgY3VyPSR7Q09NUF9XT1JEU1tDT01QX0NXT1JEXX0KbG9jYWwgY29tcHdvcmRzPSgiJHtDT01QX1dPUkRTW0BdOjE6JENPTVBfQ1dPUkQtMX0iKQpsb2NhbCBjb21wbGluZT0iJHtjb21wd29yZHNbKl19IgpjYXNlICIkY29tcGxpbmUiIGluCidsb2NrIHNlc3Npb24gdG9nZ2xlJyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiJChmaW5kICIke0tVQkVGU19ST09UOi0kSE9NRS8ua3ViZX0iIC10eXBlIGYgLW5hbWUgJy5rdWJlY29uZmlnJyAyPi9kZXYvbnVsbCB8IExDX0NPTExBVEU9Qy5VVEYtOCBzb3J0KSIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIGdsb2JhbCB0b2dnbGUnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIkKGZpbmQgIiR7S1VCRUZTX1JPT1Q6LSRIT01FLy5rdWJlfSIgLXR5cGUgZiAtbmFtZSAnLmt1YmVjb25maWcnIDI+L2Rldi9udWxsIHwgTENfQ09MTEFURT1DLlVURi04IHNvcnQpIikiIC0tICIkY3VyIikKOzsKJ2xvY2sgc2Vzc2lvbiBsaXN0JyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiIikiIC0tICIkY3VyIikKOzsKJ2xvY2sgZ2xvYmFsIGxpc3QnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBzZXNzaW9uIHNldCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiQoZmluZCAiJHtLVUJFRlNfUk9PVDotJEhPTUUvLmt1YmV9IiAtdHlwZSBmIC1uYW1lICcua3ViZWNvbmZpZycgMj4vZGV2L251bGwgfCBMQ19DT0xMQVRFPUMuVVRGLTggc29ydCkiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBzZXNzaW9uIGRlbCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIHNlc3Npb24gZ2V0JyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiIikiIC0tICIkY3VyIikKOzsKJ2xvY2sgZ2xvYmFsIHNldCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiQoZmluZCAiJHtLVUJFRlNfUk9PVDotJEhPTUUvLmt1YmV9IiAtdHlwZSBmIC1uYW1lICcua3ViZWNvbmZpZycgMj4vZGV2L251bGwgfCBMQ19DT0xMQVRFPUMuVVRGLTggc29ydCkiKSIgLS0gIiRjdXIiKQo7OwonbG9jayBnbG9iYWwgZGVsJyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiIikiIC0tICIkY3VyIikKOzsKJ2xvY2sgZ2xvYmFsIGdldCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIHNlc3Npb24nKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICJzZXQgdG9nZ2xlIGRlbCBnZXQgbGlzdCIpIiAtLSAiJGN1ciIpCjs7Cidsb2NrIGdsb2JhbCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgInNldCB0b2dnbGUgZGVsIGdldCBsaXN0IikiIC0tICIkY3VyIikKOzsKJ2xpc3QtYWxsJyopCndoaWxlIHJlYWQgLXI7IGRvIENPTVBSRVBMWSs9KCIkUkVQTFkiKTsgZG9uZSA8IDwoY29tcGdlbiAtVyAiJChfa3ViZWZzX2NvbXBsZXRpb25zX2ZpbHRlciAiIikiIC0tICIkY3VyIikKOzsKJ2xpc3QnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIiKSIgLS0gIiRjdXIiKQo7OwonZmluZCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgImt1YmVhdXRoIGt1YmVjb25maWciKSIgLS0gIiRjdXIiKQo7OwonYXV0aCcqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgIiQoZmluZCAiJHtLVUJFRlNfUk9PVDotJEhPTUUvLmt1YmV9IiAtdHlwZSBmIC1uYW1lICcua3ViZWF1dGgnIDI+L2Rldi9udWxsIHwgTENfQ09MTEFURT1DLlVURi04IHNvcnQpIikiIC0tICIkY3VyIikKOzsKJ2xvY2snKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICJnbG9iYWwgc2Vzc2lvbiIpIiAtLSAiJGN1ciIpCjs7CidnZXQnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIiKSIgLS0gIiRjdXIiKQo7OwonY2QnKikKd2hpbGUgcmVhZCAtcjsgZG8gQ09NUFJFUExZKz0oIiRSRVBMWSIpOyBkb25lIDwgPChjb21wZ2VuIC1XICIkKF9rdWJlZnNfY29tcGxldGlvbnNfZmlsdGVyICIkKGZpbmQgIiR7S1VCRUZTX1JPT1Q6LSRIT01FLy5rdWJlfSIgLXR5cGUgZiAtbmFtZSAnLmt1YmVjb25maWcnIC1leGVjIGRpcm5hbWUge30gXDsgMj4vZGV2L251bGwgfCBMQ19DT0xMQVRFPUMuVVRGLTggc29ydCkiKSIgLS0gIiRjdXIiKQo7OwoqKQp3aGlsZSByZWFkIC1yOyBkbyBDT01QUkVQTFkrPSgiJFJFUExZIik7IGRvbmUgPCA8KGNvbXBnZW4gLVcgIiQoX2t1YmVmc19jb21wbGV0aW9uc19maWx0ZXIgImdldCBsaXN0IGxpc3QtYWxsIGZpbmQgY2QgYXV0aCBsb2NrIikiIC0tICIkY3VyIikKOzsKZXNhYwp9ICYmCmNvbXBsZXRlIC1vIG5vc29ydCAtRiBfa3ViZWZzX2NvbXBsZXRpb25zIGt1YmVmcwo=
+# kubefs completion                                        -*- shell-script -*-
+
+# This bash completions script was generated by
+# completely (https://github.com/dannyben/completely)
+# Modifying it manually is not recommended
+
+_kubefs_completions_filter() {
+  local words="$1"
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local result=()
+
+  if [[ "${cur:0:1}" == "-" ]]; then
+    echo "$words"
+
+  else
+    for word in $words; do
+      [[ "${word:0:1}" != "-" ]] && result+=("$word")
+    done
+
+    echo "${result[*]}"
+
+  fi
+}
+
+_kubefs_completions() {
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local compwords=("${COMP_WORDS[@]:1:$COMP_CWORD-1}")
+  local compline="${compwords[*]}"
+
+  case "$compline" in
+    'lock session toggle'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "$(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort)")" -- "$cur")
+      ;;
+
+    'lock global toggle'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "$(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort)")" -- "$cur")
+      ;;
+
+    'lock session list'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'lock global list'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'lock session set'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "$(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort)")" -- "$cur")
+      ;;
+
+    'lock session del'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'lock session get'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'lock global set'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "$(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort)")" -- "$cur")
+      ;;
+
+    'lock global del'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'lock global get'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'lock session'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "set toggle del get list")" -- "$cur")
+      ;;
+
+    'lock global'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "set toggle del get list")" -- "$cur")
+      ;;
+
+    'list-all'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'list'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'find'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "kubeauth kubeconfig")" -- "$cur")
+      ;;
+
+    'auth'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "$(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeauth' 2>/dev/null | LC_COLLATE=C.UTF-8 sort)")" -- "$cur")
+      ;;
+
+    'lock'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "global session")" -- "$cur")
+      ;;
+
+    'get'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "")" -- "$cur")
+      ;;
+
+    'cd'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "$(find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' -exec dirname {} \; 2>/dev/null | LC_COLLATE=C.UTF-8 sort)")" -- "$cur")
+      ;;
+
+    *)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_kubefs_completions_filter "get list list-all find cd auth lock")" -- "$cur")
+      ;;
+
+  esac
+} &&
+  complete -o nosort -F _kubefs_completions kubefs
+
+# ex: filetype=sh

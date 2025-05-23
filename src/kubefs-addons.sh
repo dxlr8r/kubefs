@@ -1,6 +1,7 @@
 #!/bin/sh
 
-_kfs_addons_kubectl_alias_complete() {
+if "${KUBEFS_BASE_ADDONS:-true}" = 'true'; then
+_kubefs_kubectl_alias_complete() {
   # skip if requested
   test "${KUBEFS_COMPLETION:-true}" = 'true' || return 0
   # not executed as a subshell, prefixed to a pipe, etc.
@@ -23,10 +24,10 @@ _kfs_addons_kubectl_alias_complete() {
 }
 
 # get current context or set
-_kfs_addons_kubectl_alias_complete kx 'config use-context'
+_kubefs_kubectl_alias_complete kx 'config use-context'
 kx() (
-  if command -v kubefs >/dev/null 2>&1; then
-    export KUBECONFIG=$(kubefs)
+  if command -v KubeFs >/dev/null 2>&1; then
+    export KUBECONFIG=$(KubeFs get)
   fi
 
   # switch to named context
@@ -100,10 +101,10 @@ kx() (
 )
 
 # get current namespace or set
-_kfs_addons_kubectl_alias_complete kn 'get ns --no-headers -o custom-columns=":.metadata.name"'
+_kubefs_kubectl_alias_complete kn 'get ns --no-headers -o custom-columns=":.metadata.name"'
 kn() (
-  if command -v kubefs >/dev/null 2>&1; then
-    export KUBECONFIG=$(kubefs)
+  if command -v KubeFs >/dev/null 2>&1; then
+    export KUBECONFIG=$(KubeFs get)
   fi
 
   if test "$1"; then
@@ -138,12 +139,34 @@ kn() (
   fi
 )
 
-kubeauth_init() {
+_KubeFsAddon_init(){
+shift
+case "$1" in
+auth) shift; (
   if test -e "${1:-$(pwd)}/.kubeauth"; then
     printf 'ERROR: `%s` already exists.\n' "${1:-}/.kubeauth" > /dev/stderr
     return 1
   else
-    # needs to be escaped, otherwise `build.sh` will strip comments and leading whitespace
-    printf '%b' '#!/bin/sh\nset -e\n\n# source kubeauth_init.sh\n. $HOME/.local/share/kubefs/kubeauth_init.sh 2>/dev/null || \\\n. /usr/share/kubefs/kubeauth_init.sh\n\n# if already athenticated, exit\ntest -n "${KUBE_AUTHENTICATED:-}" && exit || :\n\n# myauth_cmd\n' > "${1:-$(pwd)}/.kubeauth"
-  fi
+
+	cat <<- 'EOF' > "${1:-$(pwd)}/.kubeauth"
+	#!/bin/sh
+	set -e
+
+	# source kubeauth_init.sh
+	. $HOME/.local/libexec/kubefs/kubeauth-init.sh 2>/dev/null || \
+	. /usr/libexec/kubefs/kubeauth-init.sh
+
+	# if already athenticated, exit
+	test -n "${KUBE_AUTHENTICATED:-}" && exit || :
+
+	# myauth_cmd
+	EOF
+	fi
+)
+;;
+*) shift
+  KubeFs printf-stderr 'argument `%s` not supported\n' "$1"
+;;
+esac
 }
+fi

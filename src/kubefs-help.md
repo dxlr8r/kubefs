@@ -52,6 +52,10 @@ KUBEFS_CD_SESSION_LOCK (default: `false`)
   when using `kubefs cd` with `path` as an argument, do a
   `kubefs lock session set` towards that `path`.
 
+KUBEFS_AUTH_SESSION_LOCK (default: `false`)
+  when using `kubefs auth` with `path` as an argument, do a
+  `kubefs lock session set` towards that `path`.
+
 KUBEFS_AUTH_AUTO_CD (default: `false`)
   when using `kubefs auth` with `path` as an argument, cd to that path.
 
@@ -61,7 +65,7 @@ KUBEFS_RECOMMENDED_ALIAS (default: `true`)
     - `kf` -> `kubefs`
     - `kubefs` -> `kubefs`, set `KUBECONFIG` to `.kubeconfig`'s path
 
-KUBEFS_OPTIONAL_ALIAS  (default: `true`)
+KUBEFS_OPTIONAL_ALIAS (default: `true`)
   recommended aliases that makes short aliases of long commands.
     - `kfg` `kubefs lock global toggle`
     - `kfe` `kubefs lock session set`
@@ -70,6 +74,12 @@ KUBEFS_OPTIONAL_ALIAS  (default: `true`)
     - `kfa` `kubefs auth`
     - `kfls` `kubefs list-all`
     - for each tool in `KUBEFS_TOOL` set `KUBECONFIG` to `.kubeconfig`'s path 
+
+KUBEFS_BASE_ADDONS (default: `true`)
+  enable all base addons:
+    - `kx` for listing and changing context
+    - `kn` for listing and changing namespace
+    - `kubefs init auth` creates a .kubeauth in current directory
 
 KUBEFS_ROOT (default: `$HOME/.kube`)
   where to search for .kubeconfig and .kubeauth. Recommended to keep unchanged.

@@ -1,48 +1,59 @@
 #!/bin/sh
 
-# KUBEFS
-# ======
+KubeFs() {
+case "${1:-get}" in
 
-_kfs_printf_stderr() {
+# KubeFs functions
+# ================
+
+fn) shift
+case "$1" in
+kubefs-bash-complete)
+cat << 'EOF'
+_KUBEFS_BASH_COMPLETE_PLACEHOLDER_
+EOF
+;;
+printf-stderr) shift
   if test $# -eq 0; then
-    _kfs_printf_stderr '%s\n' "$(cat)"
+    KubeFs fn printf-stderr '%s\n' "$(cat)"
   else
     printf -- "$@" >/dev/stderr
   fi
-}
+;;
 
-_kfm_iprintf() {
+iprintf) shift
   if case "${-:-}" in *i*) true;; *) false;; esac || test "${KUBEFS_DEBUG:-false}" = 'true'; then
     if test $# -eq 0; then
-      cat | _kfs_printf_stderr
+      cat | KubeFs fn printf-stderr
     else
-      _kfs_printf_stderr "$@"
+      KubeFs fn printf-stderr "$@"
     fi
   fi
-}
+;;
 
-_kfs_debug() {
+debug) shift
   if test "${KUBEFS_DEBUG:-false}" = 'true'; then
     if test $# -eq 0; then
-      cat | _kfs_printf_stderr
+      cat | KubeFs fn printf-stderr
     else
-      _kfs_printf_stderr "$@"
+      KubeFs fn printf-stderr "$@"
     fi
   fi
-}
+;;
 
-_kfs_parents() (
+descendants) shift; (
   test -n "${1:-}" || return 1
   if test "$1" != '/'; then
     printf '%s\n' "$1"
-    _kfs_parents "$(dirname "$1")"
+    KubeFs fn descendants "$(dirname "$1")"
   else
     printf '/\n'
     return 0
   fi
 )
+;;
 
-_kfs_dirname() (
+dirname) shift; (
   if test -d "${1:-}"; then
     # printf '%s\n' "$1"
     cd "$1"; pwd
@@ -52,8 +63,9 @@ _kfs_dirname() (
     :
   fi
 )
+;;
 
-_kfs_resolve_symlink() {
+resolve-symlink) shift
   awk \
   -v LINK="$1" \
   -v LIST="$(LC_ALL=C command ls -l "$1")" \
@@ -62,23 +74,24 @@ _kfs_resolve_symlink() {
     LINK_POS=index(LIST, LINK);
     print substr(LIST, LINK_POS+LINK_LEN+4)
   }'
-}
+;;
 
-_kfs_find_kubefile() (
-  set -- "$(_kfs_dirname "${1:-}")" "${2:-.kubeconfig}"
+find-kubefile) shift; (
+  set -- "$(KubeFs fn dirname "${1:-}")" "${2:-.kubeconfig}"
   # find first occurence of .kubeconfig in the parent tree
   kubefile=$(\
-    _kfs_parents "$1" \
+    KubeFs fn descendants "$1" \
     | xargs -I {} ls -1 {}/$2 2>/dev/null \
     | head -n1 \
   )
-  _kfs_debug '# KUBEFILE="%s"\n' "$kubefile"
+  KubeFs fn debug '# KUBEFILE="%s"\n' "$kubefile"
   test -z "$kubefile" || printf '%s\n' "$kubefile"
 )
+;;
 
-_kfs_find_any_kubeconfig() (
+find-any-kubeconfig) shift; (
   if
-    kubeconfig=$(_kfs_find_kubefile "${1:-}")
+    kubeconfig=$(KubeFs fn find-kubefile "${1:-}")
     test -n "$kubeconfig"
   then
     :
@@ -88,117 +101,140 @@ _kfs_find_any_kubeconfig() (
     kubeconfig="$HOME/.kube/config"
   fi
 
-  _kfs_debug '# KUBECONFIG="%s"\n' "$kubeconfig"
+  KubeFs fn debug '# KUBECONFIG="%s"\n' "$kubeconfig"
   printf '%s\n' "$kubeconfig"
 )
+;;
 
-_kfs_lock_session_set() {
-  set -- "$(_kfs_find_kubefile "${1:-.}")"
+lock-session-set) shift
+  set -- "$(KubeFs fn find-kubefile "${1:-.}")"
   if test -z "${1:-}"; then
-    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$(pwd)"
+    KubeFs fn printf-stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$(pwd)"
     return 1
   else
     export LOCK_KUBECONFIG=$1
     export KUBECONFIG=$LOCK_KUBECONFIG
-    _kfm_iprintf '# LOCK_KUBECONFIG="%s"\n' "$LOCK_KUBECONFIG"
+    KubeFs fn iprintf '# LOCK_KUBECONFIG="%s"\n' "$LOCK_KUBECONFIG"
   fi
-}
-_kfs_lock_session_del() {
+;;
+lock-session-del) shift
   test "${KUBECONFIG:-}" = "${LOCK_KUBECONFIG:-}" && unset KUBECONFIG || :
   unset LOCK_KUBECONFIG
-  _kfm_iprintf '# unset LOCK_KUBECONFIG\n'
-}
-_kfs_lock_session_toggle() {
+  KubeFs fn iprintf '# unset LOCK_KUBECONFIG\n'
+;;
+lock-session-toggle) shift
   if test -z "${1:-}" -a -n "$LOCK_KUBECONFIG"; then
-    _kfs_lock_session_del
+    KubeFs fn lock-session-del
   else
-    _kfs_lock_session_set "${1:-}"
+    KubeFs fn lock-session-set "${1:-}"
   fi
-}
-_kfs_lock_session_get() (
+;;
+lock-session-get) shift; (
   if test -n "$LOCK_KUBECONFIG"; then
     test "${1:-}" = "list" \
-    && printf 'LOCK_KUBECONFIG="%s"\n' "$(_kfs_lock_session_get)" \
+    && printf 'LOCK_KUBECONFIG="%s"\n' "$(KubeFs fn lock-session-get)" \
     || printf '%s\n' "$LOCK_KUBECONFIG"
   fi
 )
+;;
 
-_kfs_lock_global_set() (
-  set -- "$(_kfs_find_kubefile "${1:-.}")"
+lock-global-set) shift; (
+  set -- "$(KubeFs fn find-kubefile "${1:-.}")"
   if test -z "${1:-}"; then
-    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$(pwd)"
+    KubeFs fn printf-stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$(pwd)"
     return 1
   else
     test -L "$HOME/.kube/config" && unlink "$HOME/.kube/config" || :
     if ! test -e "$HOME/.kube/config"; then
       ln -s "$1" "$HOME/.kube/config"
-      _kfm_iprintf '# ln -s "%s" "%s"\n' "$1" "$HOME/.kube/config"
+      KubeFs fn iprintf '# ln -s "%s" "%s"\n' "$1" "$HOME/.kube/config"
     else
-      _kfs_printf_stderr '# ERROR: `%s` not a symlink.\n' "$HOME/.kube/config"
+      KubeFs fn printf-stderr '# ERROR: `%s` not a symlink.\n' "$HOME/.kube/config"
     fi
   fi
 )
-_kfs_lock_global_del() (
+;;
+lock-global-del) shift; (
   if unlink "$HOME/.kube/config" 2>/dev/null; then
-    _kfm_iprintf '# unlink "%s"\n' "$HOME/.kube/config"
+    KubeFs fn iprintf '# unlink "%s"\n' "$HOME/.kube/config"
   else
-    _kfs_printf_stderr '# WARNING: `%s` not a symlink.\n' "$HOME/.kube/config"
+    KubeFs fn printf-stderr '# WARNING: `%s` not a symlink.\n' "$HOME/.kube/config"
   fi
 )
-_kfs_lock_global_toggle() (
+;;
+lock-global-toggle) shift; (
   if test -z "${1:-}" -a -L "$HOME/.kube/config"; then
-    _kfs_lock_global_del
+    KubeFs fn lock-global-del
   else
-    _kfs_lock_global_set "${1:-}"
+    KubeFs fn lock-global-set "${1:-}"
   fi
 )
-_kfs_lock_global_get() (
+;;
+lock-global-get) shift; (
   if test -L "$HOME/.kube/config"; then
     test "${1:-}" = "list" && printf '%s -> ' "$HOME/.kube/config" || :
-    printf '%s\n' "$(_kfs_resolve_symlink "$HOME/.kube/config")"
+    printf '%s\n' "$(KubeFs fn resolve-symlink "$HOME/.kube/config")"
   fi
 )
+;;
 
-_kfs_kubeauth() {
+kubeauth) shift
   if test -z "${1:-}" -a -n "${LOCK_KUBECONFIG:-}"; then
-    _kfs_printf_stderr '# INFO: `LOCK_KUBECONFIG` is set, attempting to deduct `.kubeauth`.\n'
-    set -- "$(_kfs_find_kubefile "$LOCK_KUBECONFIG" '.kubeauth')" _
+    KubeFs fn printf-stderr '# INFO: `LOCK_KUBECONFIG` is set, attempting to deduct `.kubeauth`.\n'
+    set -- "$(KubeFs fn find-kubefile "$LOCK_KUBECONFIG" '.kubeauth')" _
   else
-    set -- "$(_kfs_find_kubefile "${1:-.}" '.kubeauth')"
+    set -- "$(KubeFs fn find-kubefile "${1:-.}" '.kubeauth')"
   fi
 
   if test -z "$1"; then
-    _kfs_printf_stderr "# WARNING: Could not find any \`.kubeauth\` in path or parents' paths.\n"
+    KubeFs fn printf-stderr "# WARNING: Could not find any \`.kubeauth\` in path or descendants' paths.\n"
     return 1
   fi
 
   test -x "$1" || chmod +x "$1"
-  _kfs_debug '# kubeauth="%s"\n' "$1"
+  KubeFs fn debug '# kubeauth="%s"\n' "$1"
   "$1"
-  # allow for .kubeauth and .kubeconfig to not be in the same directory, besides KUBEFS_CD_SESSION_LOCK does the same
-  # test -z "${2:-}" || _kfs_lock_session_set "$1"
-}
 
-_kfs_kubectl() (
-  export KUBECONFIG=$(_kfs_find_any_kubeconfig)
+  # lock session unless is already current lock
+  if
+    test "${KUBEFS_AUTH_SESSION_LOCK:-false}" = 'true' &&
+    test "${LOCK_KUBECONFIG:-}" != "$1"/.kubeconfig
+  then
+    KubeFs fn lock-session-set "$1"
+  fi
+
+  if
+    test "${KUBEFS_AUTH_AUTO_CD:-false}" = 'true' &&
+    test -n "${2:-}"
+  then
+    KubeFs fn cd "$(dirname "${1:-}")"
+  fi
+
+  # allow for .kubeauth and .kubeconfig to not be in the same directory, besides KUBEFS_CD_SESSION_LOCK does the same
+  # test -z "${2:-}" || KubeFs fn lock-session-set "$1"
+;;
+
+kubectl) shift; (
+  export KUBECONFIG=$(KubeFs fn find-any-kubeconfig)
   command kubectl "$@"
 )
+;;
 
-_kfs_cd() {
+cd) shift
   # if no argument, set $1 to session or global lock (if set)
   if test -z "${1:-}"; then
     if
       test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
-      test -f "$(_kfs_lock_session_get)"
+      test -f "$(KubeFs fn lock-session-get)"
     then
-      set -- "$(dirname "$(_kfs_lock_session_get)")"
+      set -- "$(dirname "$(KubeFs fn lock-session-get)")"
     elif
       test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
-      test -f "$(_kfs_lock_global_get)"
+      test -f "$(KubeFs fn lock-global-get)"
     then
-      set -- "$(dirname "$(_kfs_lock_global_get)")"
+      set -- "$(dirname "$(KubeFs fn lock-global-get)")"
     else
-      _kfs_cmd get
+      KubeFs get
       return 0
     fi
   fi
@@ -207,7 +243,7 @@ _kfs_cd() {
   if test -f "$1/.kubeconfig"; then
     command cd -- "$1"
   else
-    _kfs_printf_stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
+    KubeFs fn printf-stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
     return 0
   fi
 
@@ -216,116 +252,27 @@ _kfs_cd() {
     test "${KUBEFS_CD_SESSION_LOCK:-false}" = 'true' &&
     test "${LOCK_KUBECONFIG:-}" != "$1"/.kubeconfig
   then
-    _kfs_lock_session_set "$1"
+    KubeFs fn lock-session-set "$1"
   fi
-}
+;;
 
-_kfs_cmd() {
-  case ${1:-get} in
-  ctl|kubectl)
-    shift
-    _kfs_kubectl "$@"
-  ;;
-  g|get)
-    printf '%s\n' "$(_kfs_find_any_kubeconfig)"
-  ;;
-  cd|jump)
-    shift
-    _kfs_cd "${1:-}"
-  ;;
-  ls|list)
-    printf 'KUBECONFIG="%s"\n' "$(_kfs_cmd get)"
-  ;;
-  la|lsa|list-all)
-    _kfs_cmd list
-    _kfs_cmd lock session list
-    _kfs_cmd lock global list
-  ;;
-  find)
-    case ${2:-kubeconfig} in
-      kubeauth)
-        find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeauth' 2>/dev/null | LC_COLLATE=C.UTF-8 sort
-      ;;
-      kubeconfig)
-        find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort
-      ;;
-    esac
-  ;;
-  auth|authenticate)
-    _kfs_kubeauth "${2:-}"
-    if
-      test "${KUBEFS_AUTH_AUTO_CD:-false}" = 'true' &&
-      test -n "${2:-}"
-    then
-      _kfs_cd "$(dirname "${2:-}")"
-    fi
-  ;;
-  lock)
-    case ${2:-session} in
-    global)
-      case ${3:-set} in
-      del|delete|rm|remove|unset)
-        _kfs_lock_global_del
-      ;;
-      toggle)
-        _kfs_lock_global_toggle "${4:-}"
-      ;;
-      g|get)
-        _kfs_lock_global_get get
-      ;;
-      ls|list)
-        _kfs_lock_global_get list
-      ;;
-      set|add|mk)
-        _kfs_lock_global_set "${4:-}"
-      ;;
-      esac
-    ;;
-    
-    session)
-      case ${3:-set} in
-      del|delete|rm|remove|unset)
-        _kfs_lock_session_del
-      ;;
-      toggle)
-        _kfs_lock_session_toggle "${4:-}"
-      ;;
-      g|get)
-        _kfs_lock_session_get get
-      ;;
-      ls|list)
-        _kfs_lock_session_get list
-      ;;
-      set|add|mk)
-        _kfs_lock_session_set "${4:-}"
-      ;;
-      esac
-    ;;
-    esac
-  ;;
-  help|*)
-    printf '%s\n' "$_KFS_HELP"
-  ;;
-  esac
-}
+# KubeFS interactive functions
+# ============================
 
-# KUBEFS INTERACTIVE
-# ==================
-
-_kfs_which() {
+which) shift
   while test $# -gt 0; do
     command -v "$1" >/dev/null 2>&1 || return $?
     shift
   done
-}
+;;
 
 ## create an alias, with bash completion
-_kfs_alias() {
-  alias $1="_kfs_cmd $2"
+gen-alias) shift
+  alias $1="KubeFs $2"
 
   # kubefs completion not sourced
-  _kfs_which _kubefs_completions || return 0
-  
+  KubeFs fn which _kubefs_completions || return 0
+
   eval "$(printf "
   _kubefs_completions_$1() {
     local compl
@@ -336,41 +283,41 @@ _kfs_alias() {
   }
   complete -o nosort -F _kubefs_completions_$1 $1
   ")"
-}
+;;
 
-_kfs_init_sourced() {
+init-sourced) shift
   # required
-  alias kubefs='_kfs_cmd'
-}
+  alias kubefs='KubeFs'
+;;
 
-_kfs_init_interactive() {
+init-interactive) shift
   # do not inherit from muxer etc.
   unset KUBECONFIG LOCK_KUBECONFIG
 
   # enable bash completion for kubefs
   if
     test "${KUBEFS_COMPLETION:-true}" = 'true' &&
-    _kfs_which _get_comp_words_by_ref
+    KubeFs fn which _get_comp_words_by_ref
   then
-    _kfs_bash_complete
+    eval "$(KubeFs fn kubefs-bash-complete)"
   fi
 
   # recommended
   if test "${KUBEFS_RECOMMENDED_ALIAS:-true}" = 'true'; then
-    alias kubectl='_kfs_kubectl'
-    alias kf='_kfs_cmd'
-    _kfs_which _kubefs_completions && complete -F _kubefs_completions kf || :
+    alias kubectl='KubeFs fn kubectl'
+    alias kf='KubeFs'
+    KubeFs fn which _kubefs_completions && complete -o nosort -F _kubefs_completions kf || :
   fi
 
   # optional
   if test "${KUBEFS_OPTIONAL_ALIAS:-true}" = 'true'; then
-    _kfs_alias kfg 'lock global toggle'
-    _kfs_alias kfe 'lock session set'
-    _kfs_alias kfl 'lock session toggle'
-    _kfs_alias kfc 'cd'
-    _kfs_alias kfa 'auth'
-    _kfs_alias kff 'find'
-    alias kfls='_kfs_cmd list-all'
+    KubeFs fn gen-alias kfg 'lock global toggle'
+    KubeFs fn gen-alias kfe 'lock session set'
+    KubeFs fn gen-alias kfl 'lock session toggle'
+    KubeFs fn gen-alias kfc 'cd'
+    KubeFs fn gen-alias kfa 'auth'
+    KubeFs fn gen-alias kff 'find'
+    alias kfls='KubeFs list-all'
 
 
     # set KUBECONFIG for tool
@@ -379,6 +326,98 @@ _kfs_init_interactive() {
       && alias $tool="KUBECONFIG=\$(kf) command $tool" || continue
     done
   fi
+;;
+
+esac
+;;
+
+## commands
+
+ctl|kubectl)
+  shift
+  KubeFs fn kubectl "$@"
+;;
+g|get)
+  printf '%s\n' "$(KubeFs fn find-any-kubeconfig)"
+;;
+cd|jump) shift
+  KubeFs fn cd "${1:-}"
+;;
+ls|list)
+  printf 'KUBECONFIG="%s"\n' "$(KubeFs get)"
+;;
+la|lsa|list-all)
+  KubeFs list
+  KubeFs lock session list
+  KubeFs lock global list
+;;
+find) shift
+  case ${1:-kubeconfig} in
+    kubeauth)
+      find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeauth' 2>/dev/null | LC_COLLATE=C.UTF-8 sort
+    ;;
+    kubeconfig)
+      find "${KUBEFS_ROOT:-$HOME/.kube}" -type f -name '.kubeconfig' 2>/dev/null | LC_COLLATE=C.UTF-8 sort
+    ;;
+  esac
+;;
+auth|authenticate) shift
+  KubeFs fn kubeauth "${1:-}"
+;;
+lock)
+  case ${2:-session} in
+  global)
+    case ${3:-set} in
+    del|delete|rm|remove|unset)
+      KubeFs fn lock-global-del
+    ;;
+    toggle)
+      KubeFs fn lock-global-toggle "${4:-}"
+    ;;
+    g|get)
+      KubeFs fn lock-global-get get
+    ;;
+    ls|list)
+      KubeFs fn lock-global-get list
+    ;;
+    set|add|mk)
+      KubeFs fn lock-global-set "${4:-}"
+    ;;
+    esac
+  ;;
+
+  session)
+    case ${3:-set} in
+    del|delete|rm|remove|unset)
+      KubeFs fn lock-session-del
+    ;;
+    toggle)
+      KubeFs fn lock-session-toggle "${4:-}"
+    ;;
+    g|get)
+      KubeFs fn lock-session-get get
+    ;;
+    ls|list)
+      KubeFs fn lock-session-get list
+    ;;
+    set|add|mk)
+      KubeFs fn lock-session-set "${4:-}"
+    ;;
+    esac
+  ;;
+  esac
+;;
+?*)
+  command -V "_KubeFsAddon_$1" >/dev/null 2>&1 &&
+    eval "_KubeFsAddon_$1" \"\$\@\" ||
+    KubeFs fn printf-stderr 'argument `%s` not supported\n' "$1"
+;;
+help|*)
+cat << 'EOF'
+_HELP_PLACEHOLDER_
+EOF
+;;
+esac
 }
 
 # KUBEFS ENTRYPOINT
@@ -386,7 +425,6 @@ _kfs_init_interactive() {
 
 # executed
 if test "$(basename -- "$0" '.sh')" = 'kubefs'; then
-  _kfs_cmd "$@"
   printf -- '---
   WARNING: executing `kubefs` as an executable is not recommended.\n
   Only the following commands fill work in this mode:\n
@@ -398,15 +436,16 @@ if test "$(basename -- "$0" '.sh')" = 'kubefs'; then
   - lock global\n
   The recommended way is to source it, that be in your shell or script.
   ---\n' \
-  | sed -E 's#^\s{2}##' | _kfs_printf_stderr
+  | sed -E 's#^\s{2}##' | KubeFs fn printf-stderr
+  KubeFs "$@"
 else
-  _kfs_init_sourced
+  KubeFs fn init-sourced
   ## interactive, not subshelled, without arguments
   if
     case "${-:-}" in *i*) true;; *) false;; esac &&
     test -t 1 &&
     test "${#:-0}" -eq 0
   then
-    _kfs_init_interactive
+    KubeFs fn init-interactive
   fi
 fi

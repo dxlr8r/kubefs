@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 
+# Setup script
 set -eo pipefail
+cd "$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SRC='../src'
+BIN='../bin'
+ROOT='..'
 
-# header attached to `kubefs`
+
+# Constants
+## header attached to `kubefs`
 KUBEFS_CREDITS='# https://github.com/dxlr8r/kubefs'
 
 # some helper functions
-
-## indent input
-indent() {
-  awk -v I="${2:-  }" '{if (length($0) > 0) {printf "%s%s\n", I, $0} else {print}}' "$1"
-}
-
 ## GNU/BSD independent base64 converter
-b64() (
+B64() (
   if test "$#" -eq 0; then
     _data='-'
   else
@@ -25,93 +26,105 @@ b64() (
     base64 -i "$_data"
   fi
 )
+RmShebang() ( 
+  if head -n1 "$1" | cut -b1-2 | grep -Fxq '#!'; then
+    awk 'NR > 1' "$1"
+  else
+    cat "$1"
+  fi
+)
+AddCredits() (
+  if head -n1 "$1" | cut -b1-2 | grep -Fxq '#!'; then
+    head -n1 "$1"
+    printf '%s\n' "$KUBEFS_CREDITS"
+    awk 'NR > 1' "$1"
+  else
+    cat "$1"
+  fi
+)
+StrReplace() {
+  awk -v find="$1" -v _repl="$2" -v _input="$3" -v ORS=""  '
+  BEGIN {
+    repl = ""
+    while ((getline line < _repl) > 0) {
+        repl = repl line "\n"
+    }
+    close(_repl)
 
+    input = ""
+    while ((getline line < _input) > 0) {
+        input = input line "\n"
+    }
+    close(_input)
+
+    find_l=length(find);
+    for(i=1; i <= length(input);) {
+      f=0;
+      for(j=1; j <= find_l; j++) {
+        if (substr(input, i+j-1, 1) == substr(find, j, 1)) {f++}
+      }
+      if (f==find_l) { print repl; i=i+=find_l }
+      else {print substr(input, i, 1); i++}
+    }
+    printf "\n"
+  }'
+}
 ## converts a script to base64
-append_script() (
+AppendScript() (
   src=$1
   dest=$(basename "$1")
-  printf "printf '%%s\\\n' '"%s"' | base64 --decode > \"%s/%s\"\n" $(b64 "$src") '$KUBEFS_DIR' "$dest"
+  printf "printf '%%s\\\n' '"%s"' | base64 --decode > \"%s/%s\"\n" $(B64 "$src") "\$$2" "$dest"
   # printf 'chmod +x "%s/%s"\n' '$KUBEFS_DIR' "$dest"
 )
 
-## strips comments, empty lines, and indentation
-strip() (
-  if test "$#" -eq 0; then
-    strip "$(cat)"
-  else
-    _data="$1"
-    _header=$(printf '%s\n' "$_data" | head -n1)
-
-    # do not strip shebang
-    printf '%s' "$_header" | cut -b1-2 | grep -Fxq '#!' \
-    && { printf '%s\n' "$_header" ; } \
-    || { printf '%s\n' "$_header" | _stripper ; }
-
-    printf '%s\n' "$_data" | awk 'NR > 1' | _stripper
-  fi
-)
-_stripper() (
-  grep -vE '^\s*(#|$)' | sed -E 's/^ +//g' || :
-)
-
-## add credits to script
-add_credits() (
-  if test "$#" -eq 0; then
-    add_credits "$(cat)"
-  else
-    _data="$1"
-    printf '%s\n' "$_data" | head -n1
-    printf '%s\n' "$KUBEFS_CREDITS"
-    printf '%s\n' "$_data" | awk 'NR > 1'
-  fi
-)
-
-add_as_heredoc() (
-  _var="$1"
-  _here="$(cat "$2")"
-  _data="$(cat)"
-
-  printf '%s\n' "$_data"
-  printf "%s=\$(cat <<'EOF'\n" $_var
-  printf '%s\nEOF\n)\n' "$_here"
-)
-
-# cd to path of script
-cd "$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-SRC='../src'
-BIN='../bin'
-ROOT='..'
-
-# build `kubefs`
+# build
 
 completely generate
-cat completely.bash | strip | b64 > "$SRC/kubefs-completions.bash"
+cp -f completely.bash "$SRC/kubefs-completions.bash"
+# B64 completely.bash > "$SRC/kubefs-completions.bash"
 
-cat << EOF | strip | add_credits | add_as_heredoc _KFS_HELP "$SRC/kubefs-help.md" > "$BIN/kubefs.sh"
+## kubefs.sh
+
+### replace $1 with $2 in $3
+StrReplace \
+  "_HELP_PLACEHOLDER_" \
+  "$SRC/kubefs-help.md"\
+  "$SRC/kubefs.sh" \
+| sponge "$BIN/kubefs.sh"
+
+### replace $1 with $2 in $3
+StrReplace \
+  "_KUBEFS_BASH_COMPLETE_PLACEHOLDER_" \
+  "$SRC/kubefs-completions.bash" \
+  "$BIN/kubefs.sh" \
+| sponge "$BIN/kubefs.sh"
+
+### add credits
+AddCredits "$BIN/kubefs.sh" | sponge "$BIN/kubefs.sh"
+
+## kubefs-addons.sh
+### add credits
+AddCredits "$SRC/kubefs-addons.sh" | sponge "$BIN/kubefs-addons.sh"
+
+## kubeauth_init.sh
+### add credits
+AddCredits "$SRC/kubeauth-init.sh" | sponge "$BIN/kubeauth-init.sh"
+
+## install.sh
+
+cat << EOF > "$ROOT/install.sh"
 #!/bin/sh
-_kfs_bash_complete() {
-  eval "\$(printf '%s\n' $(cat "$SRC/kubefs-completions.bash") | base64 --decode)"
-}
-$(awk 'NR > 1' "$SRC/kubefs.sh")
-EOF
-
-# build rest
-
-cat "$SRC/kubefs_addons.sh" | strip | add_credits > "$BIN/kubefs_addons.sh"
-cat "$SRC/kubeauth_init.sh" | add_credits > "$BIN/kubeauth_init.sh"
-
-# build `install.sh`
-
-cat << EOF | add_credits > "$ROOT/install.sh"
-#!/bin/sh
+$KUBEFS_CREDITS
 if test \${UID:--1} -eq 0; then
-  : \${KUBEFS_DIR:="/usr/share/kubefs"}
+  : \${KUBEFS_LIBEXEC_DIR:="/usr/libexec/kubefs"}
+  : \${KUBEFS_PROFILE_DIR:="/etc/profile.d"}
 else
-  : \${KUBEFS_DIR:="\$HOME/.local/share/kubefs"}
+  : \${KUBEFS_LIBEXEC_DIR:="\$HOME/.local/libexec/kubefs"}
+  : \${KUBEFS_PROFILE_DIR:="\$HOME/.local/profile.d"}
 fi
-mkdir -p "\$KUBEFS_DIR"
+mkdir -p "\$KUBEFS_LIBEXEC_DIR" "\$KUBEFS_PROFILE_DIR"
 EOF
 
-append_script "$BIN/kubefs.sh"        >> "$ROOT/install.sh"
-append_script "$BIN/kubeauth_init.sh" >> "$ROOT/install.sh"
-append_script "$BIN/kubefs_addons.sh" >> "$ROOT/install.sh"
+AppendScript "$BIN/kubefs.sh"        "KUBEFS_PROFILE_DIR" >> "$ROOT/install.sh"
+AppendScript "$BIN/kubefs-addons.sh" "KUBEFS_PROFILE_DIR" >> "$ROOT/install.sh"
+AppendScript "$BIN/kubeauth-init.sh" "KUBEFS_LIBEXEC_DIR" >> "$ROOT/install.sh"
