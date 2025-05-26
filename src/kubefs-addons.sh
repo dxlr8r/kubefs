@@ -164,8 +164,11 @@ auth) shift; (
 	fi
 )
 ;;
+?*) shift
+  kubefs fn printf-stderr 'argument `%s` not supported\n' "$1"
+;;
 *) shift
-  kubefs printf-stderr 'argument `%s` not supported\n' "$1"
+  kubefs fn printf-stderr 'an argument has to be specified\n'
 ;;
 esac
 }
