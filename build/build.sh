@@ -108,7 +108,7 @@ AddCredits "$SRC/kubefs-addons.sh" | sponge "$BIN/kubefs-addons.sh"
 
 ## kubeauth_init.sh
 ### add credits
-AddCredits "$SRC/kubeauth-init.sh" | sponge "$BIN/kubeauth-init.sh"
+AddCredits "$SRC/kubeauth-base.sh" | sponge "$BIN/kubeauth-base.sh"
 
 ## install.sh
 
@@ -127,4 +127,4 @@ EOF
 
 AppendScript "$BIN/kubefs.sh"        "KUBEFS_PROFILE_DIR" >> "$ROOT/install.sh"
 AppendScript "$BIN/kubefs-addons.sh" "KUBEFS_PROFILE_DIR" >> "$ROOT/install.sh"
-AppendScript "$BIN/kubeauth-init.sh" "KUBEFS_LIBEXEC_DIR" >> "$ROOT/install.sh"
+AppendScript "$BIN/kubeauth-base.sh" "KUBEFS_LIBEXEC_DIR" >> "$ROOT/install.sh"

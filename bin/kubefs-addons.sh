@@ -27,8 +27,8 @@ _kubefs_kubectl_alias_complete() {
 # get current context or set
 _kubefs_kubectl_alias_complete kx 'config use-context'
 kx() (
-  if command -v KubeFs >/dev/null 2>&1; then
-    export KUBECONFIG=$(KubeFs get)
+  if command -v kubefs >/dev/null 2>&1; then
+    export KUBECONFIG=$(kubefs get)
   fi
 
   # switch to named context
@@ -104,8 +104,8 @@ kx() (
 # get current namespace or set
 _kubefs_kubectl_alias_complete kn 'get ns --no-headers -o custom-columns=":.metadata.name"'
 kn() (
-  if command -v KubeFs >/dev/null 2>&1; then
-    export KUBECONFIG=$(KubeFs get)
+  if command -v kubefs >/dev/null 2>&1; then
+    export KUBECONFIG=$(kubefs get)
   fi
 
   if test "$1"; then
@@ -140,7 +140,7 @@ kn() (
   fi
 )
 
-_KubeFsAddon_init(){
+_kubefs_addon_init(){
 shift
 case "$1" in
 auth) shift; (
@@ -153,9 +153,9 @@ auth) shift; (
 	#!/bin/sh
 	set -e
 
-	# source kubeauth_init.sh
-	. $HOME/.local/libexec/kubefs/kubeauth-init.sh 2>/dev/null || \
-	. /usr/libexec/kubefs/kubeauth-init.sh
+	# source kubeauth-base.sh
+	. ${KUBEFS_LIBEXEC_DIR:-~/.local/libexec/kubefs/kubeauth-base.sh} 2>/dev/null \
+  || . /usr/libexec/kubefs/kubeauth-base.sh
 
 	# if already athenticated, exit
 	test -n "${KUBE_AUTHENTICATED:-}" && exit || :
@@ -166,7 +166,7 @@ auth) shift; (
 )
 ;;
 *) shift
-  KubeFs printf-stderr 'argument `%s` not supported\n' "$1"
+  kubefs printf-stderr 'argument `%s` not supported\n' "$1"
 ;;
 esac
 }

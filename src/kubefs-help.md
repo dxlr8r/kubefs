@@ -97,14 +97,14 @@ KUBEFS_DEBUG (default: `false`)
 # Examples
 ## Options
 
-`KUBEFS_CD_SESSION`, `KUBEFS_CD_SESSION_LOCK`, `KUBEFS_AUTH_AUTO_CD`: while
+`KUBEFS_CD_SESSION`, `KUBEFS_CD_SESSION_LOCK`, `KUBEFS_AUTH_SESSION_LOCK`: while
 `false` by default, `true` is recommended for heavy shell users. Add to your
 ~/.profile:
 
 ```
 KUBEFS_CD_SESSION=true
 KUBEFS_CD_SESSION_LOCK=true
-KUBEFS_AUTH_AUTO_CD=true
+KUBEFS_AUTH_SESSION_LOCK=true
 ```
 
 # About
