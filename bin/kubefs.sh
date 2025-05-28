@@ -205,20 +205,20 @@ find-kubefile) shift; (
 )
 ;;
 
-find-any-kubeconfig) shift; (
+find-any-kubefile) shift; (
   if
-    kubeconfig=$(kubefs fn find-kubefile "${1:-}")
-    test -n "$kubeconfig"
+    kubefile=$(kubefs fn find-kubefile "${1:-}" "${2:-}")
+    test -n "$kubefile"
   then
     :
   elif test -n "${LOCK_KUBECONFIG:-}"; then
-    kubeconfig="$LOCK_KUBECONFIG"
+    kubefile="$LOCK_KUBECONFIG"
   else
-    kubeconfig="$HOME/.kube/config"
+    kubefile="$HOME/.kube/config"
   fi
 
-  kubefs fn debug '# KUBECONFIG="%s"\n' "$kubeconfig"
-  printf '%s\n' "$kubeconfig"
+  kubefs fn debug '# KUBECONFIG="%s"\n' "$kubefile"
+  printf '%s\n' "$kubefile"
 )
 ;;
 
@@ -331,7 +331,8 @@ kubeauth) shift
 ;;
 
 kubectl) shift; (
-  export KUBECONFIG=$(kubefs fn find-any-kubeconfig)
+  cfg=$(kubefs fn find-kubefile "${1:-.}")
+  test -n "$cfg" && export KUBECONFIG="$cfg" || :
   command kubectl "$@"
 )
 ;;
@@ -454,7 +455,7 @@ ctl|kubectl)
   kubefs fn kubectl "$@"
 ;;
 g|get)
-  printf '%s\n' "$(kubefs fn find-any-kubeconfig)"
+  printf '%s\n' "$(kubefs fn find-any-kubefile)"
 ;;
 cd|jump) shift
   kubefs fn cd "${1:-}"
