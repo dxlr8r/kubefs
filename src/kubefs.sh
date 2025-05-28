@@ -97,6 +97,8 @@ find-any-kubefile) shift; (
     :
   elif test -n "${LOCK_KUBECONFIG:-}"; then
     kubefile="$LOCK_KUBECONFIG"
+  elif test -n "${KUBECONFIG:-}"; then
+    kubefile="$KUBECONFIG"
   else
     kubefile="$HOME/.kube/config"
   fi
