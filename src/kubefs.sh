@@ -224,36 +224,44 @@ kubectl) shift; (
 ;;
 
 cd) shift
+  set -- "${1:-}" '.kubeconfig'
   # if no argument, set $1 to session or global lock (if set)
   if test -z "${1:-}"; then
     if
       test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
       test -f "$(kubefs fn lock-session-get)"
     then
-      set -- "$(dirname "$(kubefs fn lock-session-get)")"
+      set -- "$(dirname "$(kubefs fn lock-session-get)")" "$2"
     elif
       test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
       test -f "$(kubefs fn lock-global-get)"
     then
-      set -- "$(dirname "$(kubefs fn lock-global-get)")"
+      set -- "$(dirname "$(kubefs fn lock-global-get)")" "$2"
+    elif
+      test "${KUBEFS_CD_SESSION:-false}" = 'true' &&
+      test -f "${KUBECONFIG:-}"
+    then
+      set -- "$(dirname "$KUBECONFIG")" "$(basename "$KUBECONFIG")"
     else
-      kubefs get
-      return 0
+      :
     fi
   fi
   # if argument, cd if .kubeconfig found
 
-  if test -f "$1/.kubeconfig"; then
+  if test -f "$1/$2"; then
     command cd -- "$1"
   else
-    kubefs fn printf-stderr '# INFO: no `.kubeconfig` found in directory `%s`.\n' "$1"
-    return 0
+    kubefs fn printf-stderr '# INFO: no `.kubeconfig` found in directory'
+    test -n "${1:-}" && kubefs fn printf-stderr ' `%s`' "$1" || :
+    kubefs fn printf-stderr '.\n'
+    return 1
   fi
 
   # lock session unless is already current lock
   if
     test "${KUBEFS_CD_SESSION_LOCK:-false}" = 'true' &&
-    test "${LOCK_KUBECONFIG:-}" != "$1"/.kubeconfig
+    test "${LOCK_KUBECONFIG:-}" != "$1"/.kubeconfig &&
+    test "$2" = '.kubeconfig'
   then
     kubefs fn lock-session-set "$1"
   fi
